@@ -1,0 +1,111 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'Flask-SocketIO-Chat/**'
+      - 'development/gitops-local/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Flask-SocketIO-Chat/**'
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: dmitri166/chat-app  # Your Docker Hub username/repo
+
+jobs:
+  # Test the application
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd Flask-SocketIO-Chat
+          pip install -r requirements.txt
+
+      - name: Run basic tests
+        run: |
+          cd Flask-SocketIO-Chat
+          python -c "import app; print('✅ App imports successfully')"
+          python -c "import socketio; print('✅ SocketIO available')"
+
+  # Build and push container
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Flask-SocketIO-Chat
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Update GitOps image tag
+        run: |
+          # Update the image tag in development gitops
+          IMAGE_TAG=${{ github.sha }}
+          sed -i "s|tag:.*|tag: $IMAGE_TAG|" development/gitops-local/chat-gitops/chat-app-helm/values-dev.yaml
+
+          # Commit the change
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add development/gitops-local/
+          git commit -m "Update dev image to $IMAGE_TAG" || echo "No changes to commit"
+          git push || echo "Working locally - no remote push"
+
+  # Deploy to development (optional - manual trigger)
+  deploy-dev:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to development
+        run: |
+          echo "🚀 Deployment would happen here"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "In real scenario, this would:"
+          echo "1. Update ArgoCD application"
+          echo "2. Trigger deployment to dev environment"
+          echo "3. Run smoke tests"
