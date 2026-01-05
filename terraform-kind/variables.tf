@@ -106,3 +106,17 @@ variable "sealed_secrets_backup_enabled" {
   type        = bool
   default     = true
 }
+
+variable "argocd_admin_password" {
+  description = "Admin password for ArgoCD"
+  type        = string
+  default     = "admin123"
+  sensitive   = true
+}
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana"
+  type        = string
+  default     = "admin"
+  sensitive   = true
+}

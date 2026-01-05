@@ -1,18 +1,6 @@
 # Security Module
 # Handles ArgoCD, RBAC, Sealed Secrets, and security policies
-
-terraform {
-  required_providers {
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.11"
-    }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.14"
-    }
-  }
-}
+# Note: Providers are inherited from root configuration
 
 variable "argocd_ip" {
   description = "Static IP for ArgoCD"
@@ -49,24 +37,6 @@ variable "sealed_secrets_key_rotation_interval" {
   description = "Key rotation interval (e.g., '720h' for 30 days)"
   type        = string
   default     = "720h"
-}
-
-variable "sealed_secrets_backup_enabled" {
-  description = "Enable automatic key backup"
-  type        = bool
-  default     = true
-}
-
-variable "sealed_secrets_key_rotation" {
-  description = "Enable automatic key rotation"
-  type        = bool
-  default     = true
-}
-
-variable "sealed_secrets_key_rotation_interval" {
-  description = "Key rotation interval"
-  type        = string
-  default     = "720h"  # 30 days
 }
 
 variable "sealed_secrets_backup_enabled" {

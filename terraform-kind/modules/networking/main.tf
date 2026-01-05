@@ -1,18 +1,6 @@
 # Networking Module
 # Handles MetalLB, NGINX Ingress, and network policies
-
-terraform {
-  required_providers {
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.11"
-    }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.14"
-    }
-  }
-}
+# Note: Providers are inherited from root configuration
 
 variable "metallb_ip_range" {
   description = "IP range for MetalLB LoadBalancer services"

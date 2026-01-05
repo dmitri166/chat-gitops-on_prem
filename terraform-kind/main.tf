@@ -12,7 +12,7 @@ module "providers" {
 
 # Create Kubernetes cluster
 module "kubernetes" {
-  source = "./modules/kubernetes"
+  source = "modules/kubernetes"
 
   cluster_name       = var.kind_cluster_name
   kubernetes_version = "1.28.0"
@@ -22,7 +22,7 @@ module "kubernetes" {
 
 # Setup networking (MetalLB + Ingress)
 module "networking" {
-  source = "./modules/networking"
+  source = "modules/networking"
 
   depends_on = [module.kubernetes]
 
@@ -34,7 +34,7 @@ module "networking" {
 
 # Install monitoring stack
 module "monitoring" {
-  source = "./modules/monitoring"
+  source = "modules/monitoring"
 
   depends_on = [module.networking]
 
@@ -50,7 +50,7 @@ module "monitoring" {
 
 # Install security components
 module "security" {
-  source = "./modules/security"
+  source = "modules/security"
 
   depends_on = [module.networking]
 

@@ -1,14 +1,6 @@
 # Monitoring Module
 # Handles Prometheus, Grafana, Alertmanager stack
-
-terraform {
-  required_providers {
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.11"
-    }
-  }
-}
+# Note: Providers are inherited from root configuration
 
 variable "prometheus_ip" {
   description = "Static IP for Prometheus"

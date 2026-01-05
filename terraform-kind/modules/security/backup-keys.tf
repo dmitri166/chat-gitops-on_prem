@@ -1,14 +1,6 @@
 # Sealed Secrets Key Backup and Recovery
 # Critical for production - backup your encryption keys!
-
-terraform {
-  required_providers {
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.14"
-    }
-  }
-}
+# Note: Providers are inherited from root configuration
 
 # Backup Sealed Secrets encryption keys
 resource "kubectl_manifest" "backup_sealed_secrets_keys" {

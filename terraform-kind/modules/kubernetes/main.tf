@@ -1,14 +1,6 @@
 # Kubernetes Cluster Module
 # Handles Kind cluster creation and basic setup
-
-terraform {
-  required_providers {
-    kind = {
-      source  = "tehcyx/kind"
-      version = "~> 0.4"
-    }
-  }
-}
+# Note: Providers are inherited from root configuration
 
 variable "cluster_name" {
   description = "Name of the Kind cluster"
@@ -179,24 +171,22 @@ resource "kind_cluster" "this" {
     dynamic "containerd_config_patches" {
       for_each = var.enable_registry ? [1] : []
 
-      content {
-        yamlencode({
-          plugins = {
-            "io.containerd.grpc.v1.cri" = {
-              registry = {
-                mirrors = {
-                  "localhost:${var.registry_port}" = {
-                    endpoint = ["http://kind-registry:${var.registry_port}"]
-                  }
-                  "registry.local:${var.registry_port}" = {
-                    endpoint = ["http://kind-registry:${var.registry_port}"]
-                  }
+      content = yamlencode({
+        plugins = {
+          "io.containerd.grpc.v1.cri" = {
+            registry = {
+              mirrors = {
+                "localhost:${var.registry_port}" = {
+                  endpoint = ["http://kind-registry:${var.registry_port}"]
+                }
+                "registry.local:${var.registry_port}" = {
+                  endpoint = ["http://kind-registry:${var.registry_port}"]
                 }
               }
             }
           }
-        })
-      }
+        }
+      })
     }
 
     # Feature gates for production-like features
