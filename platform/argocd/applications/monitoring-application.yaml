@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/component: infrastructure
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/your-org/chat-app-infrastructure.git  # Update with your repo
+    targetRevision: HEAD
+    path: platform/manifests/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=false  # Monitoring namespace already exists from Helm
+  revisionHistoryLimit: 10

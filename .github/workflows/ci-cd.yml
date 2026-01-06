@@ -4,13 +4,13 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'Flask-SocketIO-Chat/**'
-      - 'development/gitops-local/**'
+      - 'applications/chat-app/**'
+      - 'platform/**'
       - '.github/workflows/**'
   pull_request:
     branches: [ main ]
     paths:
-      - 'Flask-SocketIO-Chat/**'
+      - 'applications/chat-app/**'
 
 env:
   REGISTRY: docker.io
@@ -31,12 +31,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd Flask-SocketIO-Chat
+          cd applications/chat-app/source
           pip install -r requirements.txt
 
       - name: Run basic tests
         run: |
-          cd Flask-SocketIO-Chat
+          cd applications/chat-app/source
           python -c "import app; print('✅ App imports successfully')"
           python -c "import socketio; print('✅ SocketIO available')"
 
@@ -71,7 +71,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./Flask-SocketIO-Chat
+          context: ./applications/chat-app/source
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -80,9 +80,9 @@ jobs:
 
       - name: Update GitOps image tag
         run: |
-          # Update the image tag in development gitops
+          # Update the image tag in GitOps
           IMAGE_TAG=${{ github.sha }}
-          sed -i "s|tag:.*|tag: $IMAGE_TAG|" development/gitops-local/chat-gitops/chat-app-helm/values-dev.yaml
+          sed -i "s|tag:.*|tag: $IMAGE_TAG|" applications/chat-app/helm/values-dev.yaml
 
           # Commit the change
           git config user.name "GitHub Actions"

@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: k3d-k3d-registry:5000/chat-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"
+
+service:
+  type: ClusterIP
+  port: 80
+
+nodeSelector: {}
+tolerations: []
