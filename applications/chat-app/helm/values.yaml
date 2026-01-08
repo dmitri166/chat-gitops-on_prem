@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: k3d-k3d-registry:5000/chat-app
+  repository: localhost:5002/chat-app
   tag: latest
   pullPolicy: IfNotPresent
 

@@ -23,7 +23,7 @@ spec:
       project: default
       source:
         repoURL: https://github.com/dmitri166/chat-gitops-on_prem # Update with your repo
-        targetRevision: main
+        targetRevision: master
         path: applications/chat-app/helm
         helm:
           valueFiles:

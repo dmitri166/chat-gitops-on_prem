@@ -61,7 +61,7 @@ module "networking" {
 
   metallb_ip_range    = var.metallb_ip_range
   ingress_nginx_ip    = var.ingress_nginx_ip
-  enable_ingress      = true  # Re-enabled - ingress-nginx working
+  enable_ingress      = false  # Disabled to focus on core functionality
   ingress_replicas    = 1
 }
 
@@ -78,7 +78,7 @@ module "monitoring" {
   prometheus_storage_size       = "10Gi"
   grafana_storage_size          = "5Gi"
   alertmanager_storage_size     = "2Gi"
-  enable_monitoring             = true  # Always true when module is created
+  enable_monitoring             = false  # Deploy monitoring separately later
   enable_control_plane_monitoring = var.enable_control_plane_monitoring
 }
 
