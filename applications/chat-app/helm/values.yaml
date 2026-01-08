@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: localhost:5002/chat-app
+  repository: k3d-registry:5000/chat-app
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 resources:
   requests:
