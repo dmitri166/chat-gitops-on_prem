@@ -10,10 +10,10 @@ infrastructure/
 │   ├── main.tf            # Main infrastructure setup
 │   ├── variables.tf       # Infrastructure variables
 │   ├── modules/           # Reusable Terraform modules
+│   ├── k3d-config         # Kubernetes cluster configuration
+│   ├── terraform.tfstate* # Terraform state files
 │   └── README.md          # Infrastructure docs
-└── scripts/               # Infrastructure scripts
-    ├── setup-registry.sh # Local registry setup
-    └── deploy-infra.sh   # Infrastructure deployment
+└── README.md              # Infrastructure documentation
 ```
 
 ## 🎯 What Terraform Manages

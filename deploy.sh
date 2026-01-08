@@ -62,15 +62,11 @@ deploy_infrastructure() {
 
     # Plan deployment
     log_info "Planning deployment..."
-    terraform plan -out=tfplan
+    terraform plan
 
     # Apply infrastructure
     log_info "Applying infrastructure..."
-    terraform apply tfplan
-
-    # Wait for cluster to be ready
-    log_info "Waiting for cluster to be fully ready..."
-    sleep 30
+    terraform apply -auto-approve
 
     cd ../..
 
@@ -79,38 +75,31 @@ deploy_infrastructure() {
 
 # Deploy platform configurations
 deploy_platform() {
-    log_info "⚙️ Deploying platform configurations with ArgoCD..."
+    log_info "⚙️ Deploying ArgoCD platform configurations..."
 
-    # Set kubeconfig
-    export KUBECONFIG=./infrastructure/terraform/k3d-config
+    # Deploy ArgoCD ApplicationSets (creates the applications)
+    kubectl --kubeconfig infrastructure/terraform/k3d-config apply -f platform/argocd/applicationsets/
 
-    # Deploy infrastructure applications
-    log_info "Deploying MetalLB and monitoring configurations..."
-    kubectl apply -f platform/argocd/applications/
+    # Deploy ArgoCD Applications (platform infrastructure)
+    kubectl --kubeconfig infrastructure/terraform/k3d-config apply -f platform/argocd/applications/
 
-    # Wait for applications to sync
-    log_info "Waiting for ArgoCD applications to sync..."
-    sleep 60
+    # Wait for applications to be created
+    log_info "⏳ Waiting for ArgoCD applications to be created..."
+    sleep 10
 
-    log_success "✅ Platform configurations deployed"
+    log_success "✅ ArgoCD platform configurations deployed"
 }
 
 # Deploy applications
 deploy_applications() {
-    log_info "📦 Deploying applications..."
+    log_info "📦 Applications are deployed automatically via ArgoCD ApplicationSet..."
+    log_info "Check ArgoCD UI for chat-dev, chat-staging, chat-prod applications"
 
-    # Set kubeconfig
-    export KUBECONFIG=./infrastructure/terraform/k3d-config
+    # Wait a bit for ArgoCD to process the applications
+    log_info "⏳ Waiting for application deployments..."
+    sleep 30
 
-    # Deploy ApplicationSet for chat app
-    log_info "Deploying chat application ApplicationSet..."
-    kubectl apply -f platform/argocd/applicationsets/
-
-    # Wait for applications to deploy
-    log_info "Waiting for applications to deploy..."
-    sleep 120
-
-    log_success "✅ Applications deployed"
+    log_success "✅ Applications deployed via ArgoCD GitOps"
 }
 
 # Show access information
@@ -131,37 +120,12 @@ show_access_info() {
     echo "   Grafana Admin:    admin / $GRAFANA_PASSWORD"
     echo ""
 
-    echo "🌐 Service URLs:"
-    echo "   ArgoCD:          https://172.18.255.101"
-    echo "   Grafana:         http://172.18.255.103"
-    echo "   Prometheus:      http://172.18.255.102"
-    echo "   Alertmanager:    http://172.18.255.104"
-    echo "   Chat App (Dev):  Via Ingress (check ArgoCD UI)"
-    echo ""
-
-    echo "🔧 Useful Commands:"
-    echo "   # Set kubeconfig"
-    echo "   export KUBECONFIG=./infrastructure/terraform/k3d-config"
-    echo ""
-    echo "   # Check cluster status"
-    echo "   kubectl get nodes"
-    echo "   kubectl get pods -A"
-    echo ""
-    echo "   # Access ArgoCD UI"
-    echo "   kubectl port-forward svc/argocd-server -n argocd 8080:443"
-    echo "   # Then open: https://localhost:8080"
-    echo ""
-
-    echo "📊 Monitoring:"
-    echo "   - Prometheus: kubectl port-forward svc/prometheus-operated -n monitoring 9090:9090"
-    echo "   - Grafana: kubectl port-forward svc/grafana -n monitoring 3000:3000"
-    echo ""
-
-    echo "🚀 Chat Application Scaling:"
-    echo "   KEDA will automatically scale based on:"
-    echo "   - Active WebSocket connections (primary)"
-    echo "   - Message throughput rate (secondary)"
-    echo "   - Memory usage (tertiary)"
+    echo "📋 Verification Steps:"
+    echo "1. Verify cluster: kubectl get nodes"
+    echo "2. Check services: kubectl get svc -A"
+    echo "3. Check ArgoCD UI: Applications should be deployed automatically"
+    echo "4. Access services: Use ./start-all-services.bat"
+    echo "5. Check your chat app: Should be running in dev/staging/prod namespaces"
 }
 
 # Main deployment

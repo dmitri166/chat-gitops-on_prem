@@ -31,7 +31,7 @@ variable "alertmanager_ip" {
 variable "grafana_admin_password" {
   description = "Grafana admin password"
   type        = string
-  default     = "admin123"  # TODO: Use proper secret management
+  default     = ""
   sensitive   = true
 }
 
@@ -59,22 +59,127 @@ variable "enable_monitoring" {
   default     = true
 }
 
+variable "enable_control_plane_monitoring" {
+  description = "Enable monitoring of Kubernetes control plane components (requires cluster-admin)"
+  type        = bool
+  default     = false  # Disabled by default to avoid RBAC issues
+}
+
 # Providers configured at root level
+
+# Install CRDs first (required for kube-prometheus-stack)
+resource "helm_release" "monitoring_crds" {
+  count = var.enable_monitoring ? 1 : 0
+
+  name       = "monitoring-crds"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  version    = "57.2.0"
+
+  # Only install CRDs, skip everything else
+  values = [
+    yamlencode({
+      crds = {
+        enabled = true
+      }
+      # Disable all other components
+      alertmanager = {
+        enabled = false
+      }
+      grafana = {
+        enabled = false
+      }
+      prometheus = {
+        enabled = false
+      }
+      kubeApiServer = {
+        enabled = false
+      }
+      kubelet = {
+        enabled = false
+      }
+      kubeControllerManager = {
+        enabled = false
+      }
+      coreDns = {
+        enabled = false
+      }
+      kubeDns = {
+        enabled = false
+      }
+      kubeEtcd = {
+        enabled = false
+      }
+      kubeScheduler = {
+        enabled = false
+      }
+      kubeProxy = {
+        enabled = false
+      }
+      kubeStateMetrics = {
+        enabled = false
+      }
+      nodeExporter = {
+        enabled = false
+      }
+      prometheusOperator = {
+        enabled = false
+      }
+    })
+  ]
+}
 
 # Install Kube Prometheus Stack
 resource "helm_release" "monitoring" {
   count = var.enable_monitoring ? 1 : 0
+  depends_on = [helm_release.monitoring_crds]
 
   name       = "monitoring"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
-  version    = "61.8.0"
+  version    = "57.2.0"  # Stable version that exists
   namespace  = "monitoring"
 
   create_namespace = true
 
+  # Increase timeout for complex monitoring stack deployment
+  timeout = 1800  # 30 minutes - kube-prometheus-stack needs more time
+
+  # Wait for CRDs to be ready before proceeding
+  wait = true
+
   values = [
     yamlencode({
+      # CRDs already installed separately
+      crds = {
+        enabled = false
+      }
+
+      # Global configurations for stability
+      global = {
+        rbac = {
+          create = true
+        }
+        imagePullPolicy = "IfNotPresent"
+      }
+
+      # Control plane monitoring (requires cluster-admin permissions)
+      kubeApiServer = {
+        enabled = var.enable_control_plane_monitoring
+      }
+
+      kubeControllerManager = {
+        enabled = var.enable_control_plane_monitoring
+      }
+
+      kubeScheduler = {
+        enabled = var.enable_control_plane_monitoring
+      }
+
+      kubeEtcd = {
+        enabled = var.enable_control_plane_monitoring
+      }
+
       # Prometheus configuration
       prometheus = {
         enabled = true
@@ -110,6 +215,7 @@ resource "helm_release" "monitoring" {
           storageSpec = {
             volumeClaimTemplate = {
               spec = {
+                storageClassName = "local-path"
                 accessModes = ["ReadWriteOnce"]
                 resources = {
                   requests = {
@@ -155,6 +261,7 @@ resource "helm_release" "monitoring" {
           storage = {
             volumeClaimTemplate = {
               spec = {
+                storageClassName = "local-path"
                 accessModes = ["ReadWriteOnce"]
                 resources = {
                   requests = {
@@ -188,6 +295,7 @@ resource "helm_release" "monitoring" {
         persistence = {
           enabled = true
           size    = var.grafana_storage_size
+          storageClassName = "local-path"
         }
 
         resources = {
@@ -218,9 +326,10 @@ resource "helm_release" "monitoring" {
           }
         }
 
-        dashboardsConfigMaps = {
-          default = "sealed-secrets-dashboard"
-        }
+        # dashboardsConfigMaps removed - ConfigMap doesn't exist
+        # dashboardsConfigMaps = {
+        #   default = "sealed-secrets-dashboard"
+        # }
 
         # Enable sidecar for dashboards
         sidecar = {
@@ -265,7 +374,7 @@ output "prometheus_url" {
 
 output "grafana_url" {
   description = "Grafana access URL"
-  value       = "http://${var.grafana_ip}"
+  value       = "http://${var.grafana_ip}"  # LoadBalancer defaults to port 80
 }
 
 output "alertmanager_url" {

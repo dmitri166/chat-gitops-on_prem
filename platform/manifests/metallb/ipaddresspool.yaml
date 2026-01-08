@@ -8,4 +8,5 @@ metadata:
     app.kubernetes.io/component: infrastructure
 spec:
   addresses:
+  - 172.18.0.100-172.18.0.110
   - 172.18.255.100-172.18.255.110

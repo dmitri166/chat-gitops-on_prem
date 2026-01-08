@@ -75,6 +75,9 @@ resource "helm_release" "ingress_nginx" {
 
   create_namespace = true
 
+  # Increase timeout for slow chart deployments
+  timeout = 600  # 10 minutes
+
   values = [
     yamlencode({
       controller = {
@@ -98,18 +101,19 @@ resource "helm_release" "ingress_nginx" {
           }
         }
 
-        nodeSelector = {
-          "env" = "system"
-        }
+        # Removed node selector and tolerations for k3d compatibility
+        # nodeSelector = {
+        #   "env" = "system"
+        # }
 
-        tolerations = [
-          {
-            key      = "env"
-            operator = "Equal"
-            value    = "system"
-            effect   = "NoSchedule"
-          }
-        ]
+        # tolerations = [
+        #   {
+        #     key      = "env"
+        #     operator = "Equal"
+        #     value    = "system"
+        #     effect   = "NoSchedule"
+        #   }
+        # ]
 
         config = {
           "use-forwarded-headers" = "true"
@@ -118,21 +122,22 @@ resource "helm_release" "ingress_nginx" {
           "server-tokens"         = "false"
         }
 
+        # Metrics enabled, ServiceMonitor will be created via ArgoCD/GitOps
+        # after monitoring stack is deployed
         metrics = {
           enabled = true
-          serviceMonitor = {
-            enabled = true
-            namespace = "monitoring"
-          }
+          # serviceMonitor disabled here, will be created via GitOps
+          # serviceMonitor = {
+          #   enabled = true
+          #   namespace = "monitoring"
+          # }
         }
       }
 
+      # Disable default backend to avoid image pull issues
+      # Will be handled by application-specific backends
       defaultBackend = {
-        enabled = true
-        image = {
-          repository = "defaultbackend-amd64"
-          tag        = "1.5"
-        }
+        enabled = false
       }
 
       admissionWebhooks = {

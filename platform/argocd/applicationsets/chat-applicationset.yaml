@@ -22,7 +22,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/your-org/chat-app-infrastructure.git  # Update with your repo
+        repoURL: https://github.com/dmitri166/chat-gitops-on_prem # Update with your repo
         targetRevision: main
         path: applications/chat-app/helm
         helm:

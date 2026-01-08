@@ -101,14 +101,16 @@ variable "sealed_secrets_key_rotation_interval" {
   default     = "720h"
 }
 
-variable "sealed_secrets_backup_enabled" {
-  description = "Enable automatic key backup for Sealed Secrets"
-  type        = bool
-  default     = true
-}
 
 variable "argocd_admin_password" {
   description = "Admin password for ArgoCD. Leave empty to auto-generate a secure random password (recommended)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "argocd_admin_password_hash" {
+  description = "Bcrypt hashed admin password for ArgoCD. If set, takes precedence over argocd_admin_password"
   type        = string
   default     = ""
   sensitive   = true
@@ -124,5 +126,17 @@ variable "grafana_admin_password" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the cluster"
   type        = string
-  default     = "1.28.0"
+  default     = "1.27.4"
+}
+
+variable "enable_monitoring" {
+  description = "Enable Prometheus/Grafana monitoring stack"
+  type        = bool
+  default     = true  # Enabled - missing ConfigMap reference fixed
+}
+
+variable "enable_control_plane_monitoring" {
+  description = "Enable monitoring of Kubernetes control plane components (API server, etcd, etc.)"
+  type        = bool
+  default     = false  # Disabled by default - requires cluster-admin permissions
 }

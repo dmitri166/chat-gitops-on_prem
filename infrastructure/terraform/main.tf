@@ -13,38 +13,21 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.11"
     }
-    kubectl = {
-      source  = "alekc/kubectl"
-      version = "~> 2.0"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.13"
-    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.6"
     }
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.4"
-    }
   }
-}
-
-# Configure kubectl provider for k3d
-provider "kubectl" {
-  config_path = module.kubernetes.kubeconfig_path
 }
 
 # Configure helm provider
 provider "helm" {
   kubernetes {
-    config_path = module.kubernetes.kubeconfig_path
+    config_path = "${path.module}/k3d-config"
   }
 }
 
-# All other providers automatically use KUBECONFIG environment variable
+# All providers automatically use KUBECONFIG environment variable
 
 # Generate secure random passwords
 resource "random_password" "argocd_admin" {
@@ -73,17 +56,18 @@ module "kubernetes" {
 
 # Setup networking (MetalLB + Ingress)
 module "networking" {
-  depends_on = [module.kubernetes]
   source     = "./modules/networking"
+  depends_on = [module.kubernetes]
 
   metallb_ip_range    = var.metallb_ip_range
   ingress_nginx_ip    = var.ingress_nginx_ip
-  enable_ingress      = true
+  enable_ingress      = true  # Re-enabled - ingress-nginx working
   ingress_replicas    = 1
 }
 
 # Install monitoring stack
 module "monitoring" {
+  count = var.enable_monitoring ? 1 : 0
   depends_on = [module.networking]
   source     = "./modules/monitoring"
 
@@ -91,10 +75,11 @@ module "monitoring" {
   grafana_ip               = var.grafana_ip
   alertmanager_ip          = var.alertmanager_ip
   grafana_admin_password   = var.grafana_admin_password != "" ? var.grafana_admin_password : random_password.grafana_admin.result
-  prometheus_storage_size  = "10Gi"
-  grafana_storage_size     = "5Gi"
-  alertmanager_storage_size = "2Gi"
-  enable_monitoring        = true
+  prometheus_storage_size       = "10Gi"
+  grafana_storage_size          = "5Gi"
+  alertmanager_storage_size     = "2Gi"
+  enable_monitoring             = true  # Always true when module is created
+  enable_control_plane_monitoring = var.enable_control_plane_monitoring
 }
 
 # Install security components
@@ -111,12 +96,11 @@ module "security" {
   enable_sealed_secrets = true
   sealed_secrets_key_rotation = var.sealed_secrets_key_rotation
   sealed_secrets_key_rotation_interval = var.sealed_secrets_key_rotation_interval
-  sealed_secrets_backup_enabled = false  # Disabled for local development (no AWS)
 }
 
 # Install KEDA for event-driven autoscaling
 resource "helm_release" "keda" {
-  depends_on = [module.kubernetes]
+  depends_on = [module.networking]
 
   name       = "keda"
   repository = "https://kedacore.github.io/charts"
@@ -130,14 +114,6 @@ resource "helm_release" "keda" {
     value = ""
   }
 }
-
-# Kubernetes manifests are now handled by the respective modules
-# - RBAC policies: handled by security module
-# - Security contexts: handled by security module
-# - Network policies: handled by networking module
-
-# Storage is handled by Minikube's built-in storage provisioner
-# PVCs are created automatically by Helm charts
 
 # Outputs
 output "cluster_name" {
@@ -172,17 +148,17 @@ output "argocd_url" {
 
 output "grafana_url" {
   description = "Grafana access URL"
-  value       = module.monitoring.grafana_url
+  value       = var.enable_monitoring ? module.monitoring[0].grafana_url : "Monitoring disabled"
 }
 
 output "prometheus_url" {
   description = "Prometheus access URL"
-  value       = module.monitoring.prometheus_url
+  value       = var.enable_monitoring ? module.monitoring[0].prometheus_url : "Monitoring disabled"
 }
 
 output "alertmanager_url" {
   description = "Alertmanager access URL"
-  value       = module.monitoring.alertmanager_url
+  value       = var.enable_monitoring ? module.monitoring[0].alertmanager_url : "Monitoring disabled"
 }
 
 output "argocd_admin_password" {

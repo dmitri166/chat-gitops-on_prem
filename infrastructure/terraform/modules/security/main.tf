@@ -16,14 +16,14 @@ variable "argocd_ip" {
   default     = "172.18.255.101"
 }
 
-# Providers configured at root level
-
 variable "argocd_admin_password" {
-  description = "ArgoCD admin password (bcrypt hashed)"
+  description = "ArgoCD admin password"
   type        = string
-  default     = "$2y$10$8K1p/5j6Zf0Q9gJfKJ8jUe6N7o6jKsK7o6jKsK7o6jKsK7o6jKsK"  # admin/admin123
   sensitive   = true
 }
+
+# Providers configured at root level
+
 
 variable "enable_argocd" {
   description = "Enable ArgoCD GitOps"
@@ -87,18 +87,18 @@ resource "helm_release" "argocd" {
   namespace  = "argocd"
 
   create_namespace = true
+  force_update     = true  # Forces secret recreation on updates
 
   values = [
     yamlencode({
-      # ArgoCD configuration
+      # ArgoCD configuration using Helm chart values
       configs = {
         secret = {
           argocdServerAdminPassword = var.argocd_admin_password
-          argocdServerAdminPasswordMtime = "2024-01-01T00:00:00Z"
+          argocdServerAdminPasswordMtime = ""
         }
         cm = {
           url = "https://${var.argocd_ip}"
-          dex.config = ""
         }
       }
 
@@ -109,9 +109,7 @@ resource "helm_release" "argocd" {
             "metallb.universe.tf/loadBalancerIPs" = var.argocd_ip
           }
         }
-
         extraArgs = ["--insecure"]  # For development only
-
         resources = {
           requests = {
             cpu    = "100m"
@@ -150,10 +148,6 @@ resource "helm_release" "argocd" {
         }
       }
 
-      dex = {
-        enabled = false  # Disable for simplicity
-      }
-
       notifications = {
         enabled = false
       }
@@ -168,5 +162,5 @@ resource "helm_release" "argocd" {
 
 output "argocd_url" {
   description = "ArgoCD access URL"
-  value       = "https://${var.argocd_ip}"
+  value       = "http://${var.argocd_ip}"  # --insecure flag allows HTTP
 }
