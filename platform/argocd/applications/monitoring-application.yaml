@@ -6,10 +6,10 @@ metadata:
   labels:
     app.kubernetes.io/component: infrastructure
 spec:
-  project: default
+  project: infrastructure
   source:
-    repoURL: https://github.com/your-org/chat-app-infrastructure.git  # Update with your repo
-    targetRevision: HEAD
+    repoURL: https://github.com/dmitri166/chat-gitops-on_prem
+    targetRevision: master
     path: platform/manifests/monitoring
   destination:
     server: https://kubernetes.default.svc

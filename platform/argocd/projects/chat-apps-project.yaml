@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: chat-apps
+  namespace: argocd
+spec:
+  description: "Project for chat application deployments (dev/staging/prod)"
+  sourceRepos:
+  - https://github.com/dmitri166/chat-gitops-on_prem
+  destinations:
+  - namespace: dev
+    server: https://kubernetes.default.svc
+  - namespace: staging
+    server: https://kubernetes.default.svc
+  - namespace: prod
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Service

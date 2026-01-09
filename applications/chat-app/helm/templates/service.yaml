@@ -1,7 +1,11 @@
+{{- if not .Values.terraformManagedService }}
 apiVersion: v1
 kind: Service
 metadata:
   name: chat-svc
+  labels:
+    app.kubernetes.io/name: chat
+    app.kubernetes.io/managed-by: Helm
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -13,3 +17,4 @@ spec:
     name: metrics
   selector:
     app: chat
+{{- end }}

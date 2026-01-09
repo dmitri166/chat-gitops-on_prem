@@ -1,14 +1,25 @@
 replicaCount: 3
-service:
-  type: LoadBalancer
-resources:
-  requests:
-    cpu: "200m"
-    memory: "256Mi"
+
 nodeSelector:
   env: prod
+
 tolerations:
   - key: env
     operator: Equal
     value: prod
     effect: NoSchedule
+
+image:
+  repository: k3d-k3d-registry:5000/chat-app
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: LoadBalancer
+  port: 80
+
+logs:
+  emptyDir: ""
+  pvc: chat-logs-prod
+
+terraformManagedService: true

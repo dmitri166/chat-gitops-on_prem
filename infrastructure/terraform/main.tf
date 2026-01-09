@@ -20,11 +20,18 @@ terraform {
   }
 }
 
+
 # Configure helm provider
 provider "helm" {
   kubernetes {
     config_path = "${path.module}/k3d-config"
   }
+}
+
+# Configure kubernetes provider for resource management
+provider "kubernetes" {
+  config_path    = "${path.module}/k3d-config"
+  config_context = "k3d-chat-k3d"
 }
 
 # All providers automatically use KUBECONFIG environment variable
@@ -78,7 +85,7 @@ module "monitoring" {
   prometheus_storage_size       = "10Gi"
   grafana_storage_size          = "5Gi"
   alertmanager_storage_size     = "2Gi"
-  enable_monitoring             = false  # Deploy monitoring separately later
+  enable_monitoring             = true  # Deploy monitoring separately later
   enable_control_plane_monitoring = var.enable_control_plane_monitoring
 }
 
@@ -96,6 +103,14 @@ module "security" {
   enable_sealed_secrets = true
   sealed_secrets_key_rotation = var.sealed_secrets_key_rotation
   sealed_secrets_key_rotation_interval = var.sealed_secrets_key_rotation_interval
+}
+
+# Storage module: cluster-level durable resources (Namespaces + PVCs)
+module "storage" {
+  source = "./modules/storage"
+
+  envs     = ["dev","staging","prod"]
+  pvc_size = "1Gi"
 }
 
 # Install KEDA for event-driven autoscaling

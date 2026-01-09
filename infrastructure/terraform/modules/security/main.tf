@@ -7,6 +7,10 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.11"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
+    }
   }
 }
 
@@ -74,11 +78,18 @@ resource "helm_release" "sealed_secrets" {
   ]
 }
 
+# Generate ArgoCD server secret key
+resource "random_password" "argocd_secretkey" {
+  count   = var.enable_argocd ? 1 : 0
+  length  = 32
+  special = true
+}
+
 # Install ArgoCD
 resource "helm_release" "argocd" {
   count = var.enable_argocd ? 1 : 0
 
-  depends_on = [helm_release.sealed_secrets]
+  depends_on = [helm_release.sealed_secrets, random_password.argocd_secretkey]
 
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
@@ -87,15 +98,22 @@ resource "helm_release" "argocd" {
   namespace  = "argocd"
 
   create_namespace = true
-  force_update     = true  # Forces secret recreation on updates
+  force_update     = false  # Don't force updates - prevents constant modifications
+  timeout          = 600    # 10 minutes - ArgoCD can take time to deploy
+  wait             = false  # Don't wait - ArgoCD is already running
+  skip_crds        = true   # Skip CRD installation (they may already exist)
+  atomic           = false  # Don't rollback on timeout
 
   values = [
     yamlencode({
       # ArgoCD configuration using Helm chart values
       configs = {
         secret = {
-          argocdServerAdminPassword = var.argocd_admin_password
+          argocdServerAdminPassword     = var.argocd_admin_password
           argocdServerAdminPasswordMtime = ""
+          # server.secretkey is required for JWT token signing and session validation
+          # Generate with: openssl rand -base64 32
+          serverSecretkey = base64encode(random_password.argocd_secretkey[0].result)
         }
         cm = {
           url = "https://${var.argocd_ip}"
@@ -153,6 +171,13 @@ resource "helm_release" "argocd" {
       }
     })
   ]
+
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to prevent constant updates when ArgoCD is already running
+      values,
+    ]
+  }
 }
 
 # Sealed Secrets backup configuration moved to Terraform

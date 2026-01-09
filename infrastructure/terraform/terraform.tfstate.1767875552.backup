@@ -1,0 +1,553 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.3",
+  "serial": 109,
+  "lineage": "b2a58ebb-c0d9-f23b-822e-3ff241d5258b",
+  "outputs": {
+    "alertmanager_url": {
+      "value": "http://172.18.255.104:9093",
+      "type": "string"
+    },
+    "argocd_admin_password": {
+      "value": "2(5SWsmle@H+)?%b",
+      "type": "string",
+      "sensitive": true
+    },
+    "argocd_url": {
+      "value": "http://172.18.255.101",
+      "type": "string"
+    },
+    "cluster_name": {
+      "value": "chat-k3d",
+      "type": "string"
+    },
+    "grafana_admin_password": {
+      "value": "abccK3VZN95r",
+      "type": "string",
+      "sensitive": true
+    },
+    "grafana_url": {
+      "value": "http://172.18.255.103",
+      "type": "string"
+    },
+    "ingress_ip": {
+      "value": "172.18.255.100",
+      "type": "string"
+    },
+    "kubeconfig_setup": {
+      "value": "# Set KUBECONFIG for k3d cluster\r\nexport KUBECONFIG=./k3d-config\r\nkubectl get nodes\r\n\r\n# View cluster info:\r\nkubectl cluster-info\r\nkubectl get nodes -o wide\r\n",
+      "type": "string"
+    },
+    "prometheus_url": {
+      "value": "http://172.18.255.102:9090",
+      "type": "string"
+    },
+    "service_access": {
+      "value": "# Complete Enterprise Infrastructure Deployed Successfully! 🚀\r\n\r\n# Current status:\r\n# ✅ Kubernetes cluster: k3d (1.27.4)\r\n# ✅ Storage class: Available (local-path provisioner)\r\n# ✅ LoadBalancer services: Enabled (MetalLB)\r\n# ✅ GitOps: Enabled (ArgoCD)\r\n# ✅ Monitoring: Enabled (Prometheus + Grafana)\r\n# ✅ Security: Enabled (Sealed Secrets)\r\n# ✅ Event-Driven Scaling: Enabled (KEDA)\r\n\r\n# Cluster Info:\r\n# - Nodes: 3 total (1 server, 2 agents)\r\n# - Running in Docker containers\r\n\r\n# LoadBalancer IPs will be assigned by MetalLB\r\n# Check with: kubectl get svc -A\r\n\r\n# Access cluster with:\r\n# export KUBECONFIG=./k3d-config\r\n# kubectl get nodes\r\n\r\n# Service URLs (LoadBalancer IPs):\r\n# ArgoCD: http://172.18.255.101\r\n# Grafana: http://172.18.255.103\r\n# Prometheus: http://172.18.255.102\r\n# Alertmanager: http://172.18.255.104\r\n\r\n# Login Credentials:\r\n# ArgoCD Admin: admin / (auto-generated)\r\n# Grafana Admin: admin / (auto-generated)\r\n\r\n# Direct service access (if LoadBalancer IPs assigned):\r\n# ArgoCD: http://172.18.255.101\r\n# Grafana: http://172.18.255.103\r\n# Prometheus: http://172.18.255.102\r\n# Alertmanager: http://172.18.255.104\r\n\r\n",
+      "type": "string",
+      "sensitive": true
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "keda",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "atomic": false,
+            "chart": "keda",
+            "cleanup_on_fail": false,
+            "create_namespace": true,
+            "dependency_update": false,
+            "description": null,
+            "devel": null,
+            "disable_crd_hooks": false,
+            "disable_openapi_validation": false,
+            "disable_webhooks": false,
+            "force_update": false,
+            "id": "keda",
+            "keyring": null,
+            "lint": false,
+            "manifest": null,
+            "max_history": 0,
+            "metadata": [
+              {
+                "app_version": "2.13.0",
+                "chart": "keda",
+                "first_deployed": 1767873981,
+                "last_deployed": 1767873981,
+                "name": "keda",
+                "namespace": "keda-system",
+                "notes": "\n:::^.     .::::^:     :::::::::::::::    .:::::::::.                   .^.                  \n7???~   .^7????~.     7??????????????.   :?????????77!^.              .7?7.                 \n7???~  ^7???7~.       ~!!!!!!!!!!!!!!.   :????!!!!7????7~.           .7???7.                \n7???~^7????~.                            :????:    :~7???7.         :7?????7.               \n7???7????!.           ::::::::::::.      :????:      .7???!        :7??77???7.              \n7????????7:           7???????????~      :????:       :????:      :???7?5????7.             \n7????!~????^          !77777777777^      :????:       :????:     ^???7?#P7????7.            \n7???~  ^????~                            :????:      :7???!     ^???7J#@J7?????7.           \n7???~   :7???!.                          :????:   .:~7???!.    ~???7Y\u0026@#7777????7.          \n7???~    .7???7:      !!!!!!!!!!!!!!!    :????7!!77????7^     ~??775@@@GJJYJ?????7.         \n7???~     .!????^     7?????????????7.   :?????????7!~:      !????G@@@@@@@@5??????7:        \n::::.       :::::     :::::::::::::::    .::::::::..        .::::JGGGB@@@\u00267:::::::::        \n                                                                      ?@@#~                  \n                                                                      P@B^                   \n                                                                    :\u0026G:                    \n                                                                    !5.                     \n                                                                    .Kubernetes Event-driven Autoscaling (KEDA) - Application autoscaling made simple.\n\nGet started by deploying Scaled Objects to your cluster:\n    - Information about Scaled Objects : https://keda.sh/docs/latest/concepts/\n    - Samples: https://github.com/kedacore/samples\n\nGet information about the deployed ScaledObjects:\n  kubectl get scaledobject [--namespace \u003cnamespace\u003e]\n\nGet details about a deployed ScaledObject:\n  kubectl describe scaledobject \u003cscaled-object-name\u003e [--namespace \u003cnamespace\u003e]\n\nGet information about the deployed ScaledObjects:\n  kubectl get triggerauthentication [--namespace \u003cnamespace\u003e]\n\nGet details about a deployed ScaledObject:\n  kubectl describe triggerauthentication \u003ctrigger-authentication-name\u003e [--namespace \u003cnamespace\u003e]\n\nGet an overview of the Horizontal Pod Autoscalers (HPA) that KEDA is using behind the scenes:\n  kubectl get hpa [--all-namespaces] [--namespace \u003cnamespace\u003e]\n\nLearn more about KEDA:\n- Documentation: https://keda.sh/\n- Support: https://keda.sh/support/\n- File an issue: https://github.com/kedacore/keda/issues/new/choose\n",
+                "revision": 1,
+                "values": "{\"watchNamespace\":\"\"}",
+                "version": "2.13.0"
+              }
+            ],
+            "name": "keda",
+            "namespace": "keda-system",
+            "pass_credentials": false,
+            "postrender": [],
+            "recreate_pods": false,
+            "render_subchart_notes": true,
+            "replace": false,
+            "repository": "https://kedacore.github.io/charts",
+            "repository_ca_file": null,
+            "repository_cert_file": null,
+            "repository_key_file": null,
+            "repository_password": null,
+            "repository_username": null,
+            "reset_values": false,
+            "reuse_values": false,
+            "set": [
+              {
+                "name": "watchNamespace",
+                "type": "",
+                "value": ""
+              }
+            ],
+            "set_list": [],
+            "set_sensitive": [],
+            "skip_crds": false,
+            "status": "deployed",
+            "timeout": 300,
+            "upgrade_install": null,
+            "values": null,
+            "verify": false,
+            "version": "2.13.0",
+            "wait": true,
+            "wait_for_jobs": false
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "repository_password"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.kubernetes.null_resource.kubeconfig",
+            "module.networking.helm_release.ingress_nginx",
+            "module.networking.helm_release.metallb"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_password",
+      "name": "argocd_admin",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$qwn8ZGFfw0MGh/8aoA53puFFwEgC5xXVEoiK6ZJnSEUt/rQ2awopy",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "2(5SWsmle@H+)?%b",
+            "special": true,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "random_password",
+      "name": "grafana_admin",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$iy8EFaaP0SrIaTR9Odhe5OOs6i0qYf9R8ttO.5kMq0Y19wEdvflR.",
+            "id": "none",
+            "keepers": null,
+            "length": 12,
+            "lower": true,
+            "min_lower": 0,
+            "min_numeric": 0,
+            "min_special": 0,
+            "min_upper": 0,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "abccK3VZN95r",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.kubernetes",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "kubeconfig",
+      "provider": "provider[\"registry.terraform.io/hashicorp/null\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "7172119533066982437",
+            "triggers": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.monitoring[0]",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "monitoring",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": []
+    },
+    {
+      "module": "module.monitoring[0]",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "monitoring_crds",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": []
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "ingress_nginx",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": []
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "metallb",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "atomic": false,
+            "chart": "metallb",
+            "cleanup_on_fail": false,
+            "create_namespace": true,
+            "dependency_update": false,
+            "description": null,
+            "devel": null,
+            "disable_crd_hooks": false,
+            "disable_openapi_validation": false,
+            "disable_webhooks": false,
+            "force_update": false,
+            "id": "metallb",
+            "keyring": null,
+            "lint": false,
+            "manifest": null,
+            "max_history": 0,
+            "metadata": [
+              {
+                "app_version": "v0.13.12",
+                "chart": "metallb",
+                "first_deployed": 1767873860,
+                "last_deployed": 1767873860,
+                "name": "metallb",
+                "namespace": "metallb-system",
+                "notes": "MetalLB is now running in the cluster.\n\nNow you can configure it via its CRs. Please refer to the metallb official docs\non how to use the CRs.\n",
+                "revision": 1,
+                "values": "{\"speaker\":{\"tolerateMaster\":true}}",
+                "version": "0.13.12"
+              }
+            ],
+            "name": "metallb",
+            "namespace": "metallb-system",
+            "pass_credentials": false,
+            "postrender": [],
+            "recreate_pods": false,
+            "render_subchart_notes": true,
+            "replace": false,
+            "repository": "https://metallb.github.io/metallb",
+            "repository_ca_file": null,
+            "repository_cert_file": null,
+            "repository_key_file": null,
+            "repository_password": null,
+            "repository_username": null,
+            "reset_values": false,
+            "reuse_values": false,
+            "set": [],
+            "set_list": [],
+            "set_sensitive": [],
+            "skip_crds": false,
+            "status": "deployed",
+            "timeout": 300,
+            "upgrade_install": null,
+            "values": [
+              "\"speaker\":\n  \"tolerateMaster\": true\n"
+            ],
+            "verify": false,
+            "version": "0.13.12",
+            "wait": true,
+            "wait_for_jobs": false
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "repository_password"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.kubernetes.null_resource.kubeconfig"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.security",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "argocd",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "status": "tainted",
+          "schema_version": 1,
+          "attributes": {
+            "atomic": false,
+            "chart": "argo-cd",
+            "cleanup_on_fail": false,
+            "create_namespace": true,
+            "dependency_update": false,
+            "description": null,
+            "devel": null,
+            "disable_crd_hooks": false,
+            "disable_openapi_validation": false,
+            "disable_webhooks": false,
+            "force_update": true,
+            "id": "argocd",
+            "keyring": null,
+            "lint": false,
+            "manifest": null,
+            "max_history": 0,
+            "metadata": [
+              {
+                "app_version": "v2.12.0",
+                "chart": "argo-cd",
+                "first_deployed": 1767874467,
+                "last_deployed": 1767874467,
+                "name": "argocd",
+                "namespace": "argocd",
+                "notes": "In order to access the server UI you have the following options:\n\n1. kubectl port-forward service/argocd-server -n argocd 8080:443\n\n    and then open the browser on http://localhost:8080 and accept the certificate\n\n2. enable ingress in the values file `server.ingress.enabled` and either\n      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough\n      - Set the `configs.params.\"server.insecure\"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts\n\n\nAfter reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:\n\nkubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=\"{.data.password}\" | base64 -d\n\n(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)\n",
+                "revision": 1,
+                "values": "{\"applicationSet\":{\"resources\":{\"limits\":{\"cpu\":\"200m\",\"memory\":\"256Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"128Mi\"}}},\"configs\":{\"cm\":{\"url\":\"https://172.18.255.101\"},\"secret\":{\"argocdServerAdminPassword\":\"2(5SWsmle@H+)?%b\",\"argocdServerAdminPasswordMtime\":\"\"}},\"notifications\":{\"enabled\":false},\"repoServer\":{\"resources\":{\"limits\":{\"cpu\":\"200m\",\"memory\":\"256Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"128Mi\"}}},\"server\":{\"extraArgs\":[\"--insecure\"],\"resources\":{\"limits\":{\"cpu\":\"200m\",\"memory\":\"256Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"128Mi\"}},\"service\":{\"annotations\":{\"metallb.universe.tf/loadBalancerIPs\":\"172.18.255.101\"},\"type\":\"LoadBalancer\"}}}",
+                "version": "7.4.0"
+              }
+            ],
+            "name": "argocd",
+            "namespace": "argocd",
+            "pass_credentials": false,
+            "postrender": [],
+            "recreate_pods": false,
+            "render_subchart_notes": true,
+            "replace": false,
+            "repository": "https://argoproj.github.io/argo-helm",
+            "repository_ca_file": null,
+            "repository_cert_file": null,
+            "repository_key_file": null,
+            "repository_password": null,
+            "repository_username": null,
+            "reset_values": false,
+            "reuse_values": false,
+            "set": [],
+            "set_list": [],
+            "set_sensitive": [],
+            "skip_crds": false,
+            "status": "failed",
+            "timeout": 600,
+            "upgrade_install": null,
+            "values": [
+              "\"applicationSet\":\n  \"resources\":\n    \"limits\":\n      \"cpu\": \"200m\"\n      \"memory\": \"256Mi\"\n    \"requests\":\n      \"cpu\": \"100m\"\n      \"memory\": \"128Mi\"\n\"configs\":\n  \"cm\":\n    \"url\": \"https://172.18.255.101\"\n  \"secret\":\n    \"argocdServerAdminPassword\": \"2(5SWsmle@H+)?%b\"\n    \"argocdServerAdminPasswordMtime\": \"\"\n\"notifications\":\n  \"enabled\": false\n\"repoServer\":\n  \"resources\":\n    \"limits\":\n      \"cpu\": \"200m\"\n      \"memory\": \"256Mi\"\n    \"requests\":\n      \"cpu\": \"100m\"\n      \"memory\": \"128Mi\"\n\"server\":\n  \"extraArgs\":\n  - \"--insecure\"\n  \"resources\":\n    \"limits\":\n      \"cpu\": \"200m\"\n      \"memory\": \"256Mi\"\n    \"requests\":\n      \"cpu\": \"100m\"\n      \"memory\": \"128Mi\"\n  \"service\":\n    \"annotations\":\n      \"metallb.universe.tf/loadBalancerIPs\": \"172.18.255.101\"\n    \"type\": \"LoadBalancer\"\n"
+            ],
+            "verify": false,
+            "version": "7.4.0",
+            "wait": true,
+            "wait_for_jobs": false
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "repository_password"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "values"
+              },
+              {
+                "type": "index",
+                "value": {
+                  "value": 0,
+                  "type": "number"
+                }
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.kubernetes.null_resource.kubeconfig",
+            "module.networking.helm_release.ingress_nginx",
+            "module.networking.helm_release.metallb",
+            "module.security.helm_release.sealed_secrets",
+            "random_password.argocd_admin"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.security",
+      "mode": "managed",
+      "type": "helm_release",
+      "name": "sealed_secrets",
+      "provider": "provider[\"registry.terraform.io/hashicorp/helm\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "atomic": false,
+            "chart": "sealed-secrets",
+            "cleanup_on_fail": false,
+            "create_namespace": true,
+            "dependency_update": false,
+            "description": null,
+            "devel": null,
+            "disable_crd_hooks": false,
+            "disable_openapi_validation": false,
+            "disable_webhooks": false,
+            "force_update": false,
+            "id": "sealed-secrets",
+            "keyring": null,
+            "lint": false,
+            "manifest": null,
+            "max_history": 0,
+            "metadata": [
+              {
+                "app_version": "0.26.0",
+                "chart": "sealed-secrets",
+                "first_deployed": 1767873982,
+                "last_deployed": 1767873982,
+                "name": "sealed-secrets",
+                "namespace": "sealed-secrets",
+                "notes": "** Please be patient while the chart is being deployed **\n\nYou should now be able to create sealed secrets.\n\n1. Install the client-side tool (kubeseal) as explained in the docs below:\n\n    https://github.com/bitnami-labs/sealed-secrets#installation-from-source\n\n2. Create a sealed secret file running the command below:\n\n    kubectl create secret generic secret-name --dry-run=client --from-literal=foo=bar -o [json|yaml] | \\\n    kubeseal \\\n      --controller-name=sealed-secrets \\\n      --controller-namespace=sealed-secrets \\\n      --format yaml \u003e mysealedsecret.[json|yaml]\n\nThe file mysealedsecret.[json|yaml] is a commitable file.\n\nIf you would rather not need access to the cluster to generate the sealed secret you can run:\n\n    kubeseal \\\n      --controller-name=sealed-secrets \\\n      --controller-namespace=sealed-secrets \\\n      --fetch-cert \u003e mycert.pem\n\nto retrieve the public cert used for encryption and store it locally. You can then run 'kubeseal --cert mycert.pem' instead to use the local cert e.g.\n\n    kubectl create secret generic secret-name --dry-run=client --from-literal=foo=bar -o [json|yaml] | \\\n    kubeseal \\\n      --controller-name=sealed-secrets \\\n      --controller-namespace=sealed-secrets \\\n      --format [json|yaml] --cert mycert.pem \u003e mysealedsecret.[json|yaml]\n\n3. Apply the sealed secret\n\n    kubectl create -f mysealedsecret.[json|yaml]\n\nRunning 'kubectl get secret secret-name -o [json|yaml]' will show the decrypted secret that was generated from the sealed secret.\n\nBoth the SealedSecret and generated Secret must have the same name and namespace.\n",
+                "revision": 1,
+                "values": "{\"sealedSecrets\":{\"keyRotation\":{\"enabled\":true,\"interval\":\"720h\"}}}",
+                "version": "2.15.0"
+              }
+            ],
+            "name": "sealed-secrets",
+            "namespace": "sealed-secrets",
+            "pass_credentials": false,
+            "postrender": [],
+            "recreate_pods": false,
+            "render_subchart_notes": true,
+            "replace": false,
+            "repository": "https://bitnami-labs.github.io/sealed-secrets",
+            "repository_ca_file": null,
+            "repository_cert_file": null,
+            "repository_key_file": null,
+            "repository_password": null,
+            "repository_username": null,
+            "reset_values": false,
+            "reuse_values": false,
+            "set": [],
+            "set_list": [],
+            "set_sensitive": [],
+            "skip_crds": false,
+            "status": "deployed",
+            "timeout": 300,
+            "upgrade_install": null,
+            "values": [
+              "\"sealedSecrets\":\n  \"keyRotation\":\n    \"enabled\": true\n    \"interval\": \"720h\"\n"
+            ],
+            "verify": false,
+            "version": "2.15.0",
+            "wait": true,
+            "wait_for_jobs": false
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "repository_password"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ==",
+          "dependencies": [
+            "module.kubernetes.null_resource.kubeconfig",
+            "module.networking.helm_release.ingress_nginx",
+            "module.networking.helm_release.metallb"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

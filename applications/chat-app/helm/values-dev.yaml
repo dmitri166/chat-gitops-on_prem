@@ -1,10 +1,25 @@
-replicaCount: 1
-service:
-  type: ClusterIP
+replicaCount: 2
+
 nodeSelector:
   env: nonprod
+
 tolerations:
   - key: env
     operator: Equal
     value: nonprod
     effect: NoSchedule
+
+image:
+  repository: k3d-k3d-registry:5000/chat-app
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+
+logs:
+  emptyDir: {}
+  pvc: ""
+
+terraformManagedService: false

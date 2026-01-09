@@ -12,21 +12,26 @@ spec:
       labels:
         app: chat
     spec:
-      nodeSelector: {{ toYaml .Values.nodeSelector | nindent 8 }}
-      tolerations: {{ toYaml .Values.tolerations | nindent 8 }}
+      nodeSelector: {{ toYaml .Values.nodeSelector | nindent 6 }}
+      tolerations: {{ toYaml .Values.tolerations | nindent 6 }}
       containers:
       - name: chat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 5000
           name: http
         - containerPort: 8000
           name: metrics
+        resources: {{ toYaml .Values.resources | nindent 8 }}
         volumeMounts:
         - name: logs
           mountPath: /app/logs
-        resources: {{ toYaml .Values.resources | nindent 12 }}
       volumes:
       - name: logs
+        {{- if .Values.logs.pvc }}
         persistentVolumeClaim:
-          claimName: chat-logs-{{ .Release.Namespace | replace "chat-" "" | replace "-ns" "" }}
+          claimName: {{ .Values.logs.pvc }}
+        {{- else if .Values.logs.emptyDir }}
+        emptyDir: {}
+        {{- end }}
