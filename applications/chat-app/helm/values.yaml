@@ -2,6 +2,7 @@ replicaCount: 1
 
 image:
   repository: k3d-k3d-registry:5000/chat-app
+  tag: "latest"
   pullPolicy: Always
 
 resources:
@@ -18,3 +19,10 @@ service:
 
 nodeSelector: {}
 tolerations: []
+
+logs:
+  emptyDir: {}
+  pvc: ""
+
+env: nonprod
+terraformManagedService: false

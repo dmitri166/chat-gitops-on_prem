@@ -24,6 +24,9 @@ spec:
         - containerPort: 8000
           name: metrics
         resources: {{ toYaml .Values.resources | nindent 8 }}
+        env:
+          - name: ENV
+            value: {{ .Values.env | default "nonprod" }}
         volumeMounts:
         - name: logs
           mountPath: /app/logs
