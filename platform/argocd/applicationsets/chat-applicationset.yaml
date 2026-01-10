@@ -16,25 +16,35 @@ spec:
       - env: prod
         namespace: prod
         valuesFile: "values-prod.yaml"
+
   template:
     metadata:
       name: chat-{{env}}
     spec:
       project: chat-apps
+
       source:
-        repoURL: https://github.com/dmitri166/chat-gitops-on_prem # Update with your repo
+        repoURL: https://github.com/dmitri166/chat-gitops-on_prem
         targetRevision: master
         path: applications/chat-app/helm
         helm:
           valueFiles:
-          - values.yaml
-          - "{{valuesFile}}"
+            - values.yaml
+            - "{{valuesFile}}"
+
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
+
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-        - CreateNamespace=false
+          - CreateNamespace=false
+
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /metadata/annotations/argocd.argoproj.io~1refresh

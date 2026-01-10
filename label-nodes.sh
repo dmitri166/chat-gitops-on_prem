@@ -48,3 +48,4 @@ log_info "💡 Check pods: kubectl get pods -A --kubeconfig $KUBECONFIG | grep c
 
 
 
+
