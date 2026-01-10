@@ -26,7 +26,7 @@ tolerations:
     effect: NoSchedule
 
 logs:
-  emptyDir: {}
+  emptyDir: true
   pvc: ""
 
 env: nonprod

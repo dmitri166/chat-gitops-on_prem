@@ -31,7 +31,6 @@ spec:
               name: http
             - containerPort: 8000
               name: metrics
-
 {{- if .Values.resources }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -52,6 +51,6 @@ spec:
 {{- if .Values.logs.pvc }}
           persistentVolumeClaim:
             claimName: {{ .Values.logs.pvc }}
-{{- else }}
+{{- else if .Values.logs.emptyDir }}
           emptyDir: {}
 {{- end }}

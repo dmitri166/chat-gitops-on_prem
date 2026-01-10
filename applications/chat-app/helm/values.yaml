@@ -17,8 +17,11 @@ service:
   type: ClusterIP
   port: 80
 
+nodeSelector: null        # null avoids rendering nodeSelector in dev
+tolerations: []
+
 logs:
-  emptyDir: {}
+  emptyDir: true
   pvc: ""
 
 env: nonprod

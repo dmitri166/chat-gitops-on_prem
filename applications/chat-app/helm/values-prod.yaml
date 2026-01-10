@@ -26,7 +26,7 @@ tolerations:
     effect: NoSchedule
 
 logs:
-  emptyDir: ""
+  emptyDir: false
   pvc: chat-logs-prod
 
 env: prod
