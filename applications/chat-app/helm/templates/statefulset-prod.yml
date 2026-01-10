@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: chat-app
+  namespace: prod
+spec:
+  serviceName: chat-app
+  replicas: 3
+  selector:
+    matchLabels:
+      app: chat
+  template:
+    metadata:
+      labels:
+        app: chat
+    spec:
+      nodeSelector:
+        env: prod
+      tolerations:
+        - key: env
+          operator: Equal
+          value: prod
+          effect: NoSchedule
+      containers:
+        - name: chat
+          image: "k3d-k3d-registry:5000/chat-app:1.0.0"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              name: http
+            - containerPort: 8000
+              name: metrics
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          env:
+            - name: ENV
+              value: "prod"
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+  volumeClaimTemplates:
+    - metadata:
+        name: logs
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: local-path
