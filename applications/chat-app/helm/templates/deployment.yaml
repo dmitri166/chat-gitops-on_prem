@@ -12,36 +12,38 @@ spec:
       labels:
         app: chat
     spec:
-      nodeSelector: {{ toYaml .Values.nodeSelector | nindent 6 }}
-      tolerations: {{ toYaml .Values.tolerations | nindent 6 }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | nindent 6 }}
+      tolerations:
+{{ toYaml .Values.tolerations | nindent 6 }}
       containers:
       - name: chat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
-        - containerPort: 5000
-          name: http
-        - containerPort: 8000
-          name: metrics
+          - containerPort: 5000
+            name: http
+          - containerPort: 8000
+            name: metrics
         resources:
-        {{- if .Values.resources }}
-        {{ toYaml .Values.resources | nindent 10 }}
-        {{- end }}
+{{- if .Values.resources }}
+{{ toYaml .Values.resources | nindent 10 }}
+{{- end }}
+{{- if .Values.env }}
         env:
-        {{- if .Values.env }}
-        {{- range $key, $val := dict "ENV" .Values.env }}
+{{- range $key, $val := dict "ENV" .Values.env }}
           - name: {{ $key }}
             value: "{{ $val }}"
-        {{- end }}
-        {{- end }}
+{{- end }}
+{{- end }}
         volumeMounts:
-        - name: logs
-          mountPath: /app/logs
+          - name: logs
+            mountPath: /app/logs
       volumes:
-      - name: logs
-        {{- if .Values.logs.pvc }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.logs.pvc }}
-        {{- else if .Values.logs.emptyDir }}
-        emptyDir: {}
-        {{- end }}
+        - name: logs
+{{- if .Values.logs.pvc }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.logs.pvc }}
+{{- else if .Values.logs.emptyDir }}
+          emptyDir: {}
+{{- end }}
