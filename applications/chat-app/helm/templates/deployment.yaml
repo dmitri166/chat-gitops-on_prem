@@ -29,8 +29,10 @@ spec:
         {{- end }}
         env:
         {{- if .Values.env }}
-          - name: ENV
-            value: "{{ .Values.env }}"
+        {{- range $key, $val := dict "ENV" .Values.env }}
+          - name: {{ $key }}
+            value: "{{ $val }}"
+        {{- end }}
         {{- end }}
         volumeMounts:
         - name: logs
