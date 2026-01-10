@@ -23,8 +23,8 @@ spec:
           effect: NoSchedule
       containers:
         - name: chat
-          image: "k3d-k3d-registry:5000/chat-app:1.0.0"
-          imagePullPolicy: Always
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 5000
               name: http
