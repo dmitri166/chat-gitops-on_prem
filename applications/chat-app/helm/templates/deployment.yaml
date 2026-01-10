@@ -12,38 +12,46 @@ spec:
       labels:
         app: chat
     spec:
+{{- if .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.nodeSelector | nindent 6 }}
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+
+{{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | nindent 6 }}
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- end }}
+
       containers:
-      - name: chat
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-          - containerPort: 5000
-            name: http
-          - containerPort: 8000
-            name: metrics
-        resources:
+        - name: chat
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 5000
+              name: http
+            - containerPort: 8000
+              name: metrics
+
 {{- if .Values.resources }}
-{{ toYaml .Values.resources | nindent 10 }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
 {{- end }}
+
 {{- if .Values.env }}
-        env:
-{{- range $key, $val := dict "ENV" .Values.env }}
-          - name: {{ $key }}
-            value: "{{ $val }}"
+          env:
+            - name: ENV
+              value: "{{ .Values.env }}"
 {{- end }}
-{{- end }}
-        volumeMounts:
-          - name: logs
-            mountPath: /app/logs
+
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+
       volumes:
         - name: logs
 {{- if .Values.logs.pvc }}
           persistentVolumeClaim:
             claimName: {{ .Values.logs.pvc }}
-{{- else if .Values.logs.emptyDir }}
+{{- else }}
           emptyDir: {}
 {{- end }}
