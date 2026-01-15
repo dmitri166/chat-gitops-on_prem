@@ -1,0 +1,97 @@
+# ArgoCD Constants and Configuration
+# Centralized constants for all ArgoCD applications
+
+# Repository Configuration
+REPOSITORY_URL: "https://github.com/dmitri166/ghost_on_prem_project"
+TARGET_REVISION: "master"
+CLUSTER_SERVER: "https://kubernetes.default.svc"
+
+# Project Names
+DEFAULT_PROJECT: "default"
+GHOST_APPS_PROJECT: "ghost-apps"
+
+# Application Paths
+GHOST_APP_PATH: "applications/ghost-app/helm"
+
+# Chart Versions and Sources
+CHARTS:
+  metallb:
+    repository: "https://metallb.github.io/metallb"
+    chart: "metallb"
+    version: "v0.14.8"
+  ingress_nginx:
+    repository: "https://kubernetes.github.io/ingress-nginx"
+    chart: "ingress-nginx"
+    version: "4.9.0"
+  monitoring:
+    repository: "https://prometheus-community.github.io/helm-charts"
+    chart: "kube-prometheus-stack"
+    version: "56.6.1"
+  sealed_secrets:
+    repository: "https://bitnami-labs.github.io/sealed-secrets"
+    chart: "sealed-secrets"
+    version: "2.15.1"
+  keda:
+    repository: "https://kedacore.github.io/charts"
+    chart: "keda"
+    version: "2.12.1"
+
+# Network Configuration
+NETWORKING:
+  loadBalancer:
+    ipRange: "172.18.255.200-172.18.255.250"
+  static_ips:
+    metallb: "172.18.255.100"
+    argocd: "172.18.255.101"
+    prometheus: "172.18.255.102"
+    grafana: "172.18.255.103"
+    alertmanager: "172.18.255.104"
+
+# Environment Configuration
+ENVIRONMENTS:
+  dev:
+    namespace: "dev"
+    valuesFile: "values-dev.yaml"
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+  staging:
+    namespace: "staging"
+    valuesFile: "values-staging.yaml"
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+  prod:
+    namespace: "prod"
+    valuesFile: "values-prod.yaml"
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+
+# Sync Policies
+SYNC_POLICY:
+  automated:
+    prune: true
+    selfHeal: true
+  syncOptions:
+    - "CreateNamespace=true"
+  ignoreDifferences:
+    - group: "apps"
+      kind: "Deployment"
+      jsonPointers:
+        - "/metadata/annotations/argocd.argoproj.io~1refresh"

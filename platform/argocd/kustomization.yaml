@@ -1,0 +1,56 @@
+# Enhanced ArgoCD Kustomization for Best Practices
+# Updated with modern syntax and existing files
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  # ApplicationSets
+  - applicationsets/ghost-applicationset.yaml
+  
+  # Platform Services (existing files)
+  - applications/platform-services.yaml
+  - applications/keda-application.yaml
+  - applications/monitoring-application.yaml
+  - applications/metallb-application.yaml
+
+configMapGenerator:
+  - name: argocd-config
+    literals:
+      # Repository Configuration
+      - repository.url=https://github.com/dmitri166/ghost_on_prem_project
+      - repository.targetRevision=master
+      - cluster.server=https://kubernetes.default.svc
+      
+      # Project Configuration  
+      - projects.default=default
+      - projects.ghostApps=ghost-apps
+      
+      # Application Paths
+      - paths.ghostApp=applications/ghost-app/helm
+      
+      # Enhanced Features
+      - features.rollouts=true
+      - features.tracing=true
+      - features.security=true
+      - features.monitoring=true
+      
+      # Sync Policy
+      - syncPolicy.automated.prune=true
+      - syncPolicy.automated.selfHeal=true
+      - syncPolicy.syncOptions=CreateNamespace=true
+
+# Modern Labels (replaces commonLabels)
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: "argocd-platform"
+      app.kubernetes.io/managed-by: "argocd"
+      app.kubernetes.io/version: "v2.0"
+
+# Common Annotations
+commonAnnotations:
+  argocd.argoproj.io/managed-by: "argocd-platform"
+  argocd.argoproj.io/sync-options: "CreateNamespace=true"
+  notifications.argoproj.io/subscribe.on-sync-succeeded.slack: ""

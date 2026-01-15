@@ -1,0 +1,45 @@
+# Ghost Development Values
+
+replicaCount: 1
+
+image:
+  tag: "5.75.1"
+
+service:
+  port: 2368
+
+ingress:
+  enabled: true
+  hosts:
+    - host: ghost-dev.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+ghost:
+  config:
+    url: http://ghost-dev.local:2368
+    adminUrl: http://ghost-dev.local:2368/ghost
+    contentUrl: http://ghost-dev.local:2368/content
+
+persistence:
+  size: 5Gi
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: dev_root_password
+    database: ghost_dev
+    user: ghost_dev
+    password: ghost_dev_password
+  primary:
+    persistence:
+      size: 4Gi

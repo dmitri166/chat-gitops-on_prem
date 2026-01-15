@@ -1,0 +1,10 @@
+"cluster_name": "ghost-k3d"
+"created_at": "2026-01-15T16:51:29Z"
+"environment": "dev"
+"network_policies": "modules/security/network-policies.yaml"
+"pod_security": "modules/security/pod-security.yaml"
+"rbac": "modules/security/rbac.yaml"
+"security":
+  "network_policies": true
+  "pod_security": true
+  "rbac": true

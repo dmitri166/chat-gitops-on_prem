@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infrastructure
+  namespace: argocd
+spec:
+  description: "Project for cluster-level infrastructure applications (MetalLB, monitoring, etc.)"
+  sourceRepos:
+  - https://github.com/dmitri166/ghost_on_prem_project
+  destinations:
+  - namespace: metallb-system
+    server: https://kubernetes.default.svc
+  - namespace: monitoring
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Service

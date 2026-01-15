@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metallb-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/component: infrastructure
+spec:
+  project: infrastructure
+  source:
+    repoURL: https://github.com/dmitri166/ghost_on_prem_project
+    targetRevision: master
+    path: platform/manifests/metallb
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=false  # MetalLB namespace already exists from Helm
+  revisionHistoryLimit: 10

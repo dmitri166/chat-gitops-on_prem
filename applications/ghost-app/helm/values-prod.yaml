@@ -1,0 +1,68 @@
+# Ghost Production Values
+
+replicaCount: 3
+
+image:
+  tag: "5.75.1"
+
+service:
+  port: 2368
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: ghost-prod.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: ghost-prod-tls
+      hosts:
+        - ghost-prod.local
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+ghost:
+  config:
+    url: https://ghost-prod.local
+    adminUrl: https://ghost-prod.local/ghost
+    contentUrl: https://ghost-prod.local/content
+
+persistence:
+  size: 50Gi
+  storageClass: fast-ssd
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: prod_root_password
+    database: ghost_prod
+    user: ghost_prod
+    password: ghost_prod_password
+  primary:
+    persistence:
+      size: 40Gi
+      storageClass: fast-ssd
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+opentelemetry:
+  enabled: true

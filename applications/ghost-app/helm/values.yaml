@@ -1,0 +1,105 @@
+# Ghost Default Values
+
+replicaCount: 1
+
+image:
+  repository: dmitrik2026/ghost-app
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 2368
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: ghost.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+# Ghost specific configuration
+ghost:
+  # Database configuration
+  database:
+    type: mysql
+    host: mysql.database.svc.cluster.local
+    port: 3306
+    name: ghost
+    user: ghost
+    password: ghost_password
+  
+  # Mail configuration
+  mail:
+    transport: SMTP
+    options:
+      service: Mailgun
+      auth:
+        user: postmaster@mg.example.com
+        pass: your-mailgun-api-key
+  
+  # Ghost configuration
+  config:
+    url: http://ghost.local:2368
+    adminUrl: http://ghost.local:2368/ghost
+    contentUrl: http://ghost.local:2368/content
+    
+  # Storage
+  storage:
+    type: local
+    path: /var/lib/ghost/content
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+# MySQL database (optional - can be external)
+mysql:
+  enabled: true
+  auth:
+    rootPassword: root_password
+    database: ghost
+    user: ghost
+    password: ghost_password
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+
+# OpenTelemetry
+opentelemetry:
+  enabled: true
+  endpoint: http://otel-collector.monitoring.svc.cluster.local:4317

@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ghost-monitoring-config
+  namespace: monitoring
+  labels:
+    app: ghost
+    component: monitoring
+data:
+  prometheus-rules.yaml: |
+    groups:
+    - name: ghost.rules
+      rules:
+      - alert: GhostDown
+        expr: up{job="ghost"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ghost instance is down"
+          description: "Ghost instance {{ $labels.instance }} has been down for more than 1 minute."
+      
+      - alert: GhostHighMemoryUsage
+        expr: (container_memory_usage_bytes{pod=~"ghost-.*"} / container_spec_memory_limit_bytes) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ghost high memory usage"
+          description: "Ghost instance {{ $labels.pod }} memory usage is above 80%."
+      
+      - alert: GhostHighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{pod=~"ghost-.*"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ghost high CPU usage"
+          description: "Ghost instance {{ $labels.pod }} CPU usage is above 80%."
+      
+      - alert: GhostDatabaseConnectionFailed
+        expr: ghost_database_connections_active == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ghost database connection failed"
+          description: "Ghost instance {{ $labels.instance }} has no active database connections."
+  
+  grafana-dashboards.yaml: |
+    apiVersion: 1
+    providers:
+    - name: ghost
+      orgId: 1
+      folder: Ghost
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 10
+      allowUiUpdates: true
+      options:
+        path: /var/lib/grafana/dashboards/ghost
+  
+  loki-rules.yaml: |
+    groups:
+    - name: ghost.logs
+      rules:
+      - alert: GhostErrorLogs
+        expr: count_over_time({app="ghost"} |= "ERROR" [5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ghost error logs detected"
+          description: "Ghost instance has generated more than 5 error logs in the last 5 minutes."
+      
+      - alert: GhostDatabaseErrors
+        expr: count_over_time({app="ghost"} |= "database" |= "error" [5m]) > 3
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ghost database errors detected"
+          description: "Ghost instance has database errors in the logs."

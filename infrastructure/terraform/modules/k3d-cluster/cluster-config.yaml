@@ -1,0 +1,8 @@
+"agents": 2
+"created_at": "2026-01-15T16:51:29Z"
+"environment": "dev"
+"image": "rancher/k3s:v1.29.2-k3s1"
+"name": "ghost-k3d"
+"network": "ghost-k3d-network"
+"servers": 1
+"storage_path": "/tmp/k3d-ghost-k3d-storage"

@@ -1,0 +1,13 @@
+"apiVersion": "v1"
+"kind": "Namespace"
+"metadata":
+  "labels":
+    "component": "security"
+    "managed-by": "terraform"
+    "project": "chat-app"
+    "security.company": "chat-app"
+    "security.environment": "dev"
+    "security.managed-by": "terraform"
+    "security.version": "1.0.0"
+    "terraform": "true"
+  "name": "security"

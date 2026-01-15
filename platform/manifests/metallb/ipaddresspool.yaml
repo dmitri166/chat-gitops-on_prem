@@ -1,0 +1,12 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default
+  namespace: metallb-system
+  labels:
+    app.kubernetes.io/name: metallb
+    app.kubernetes.io/component: infrastructure
+spec:
+  addresses:
+  - 172.18.0.100-172.18.0.110
+  - 172.18.255.100-172.18.255.110

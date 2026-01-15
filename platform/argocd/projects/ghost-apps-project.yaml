@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ghost-apps
+  namespace: argocd
+spec:
+  description: "Project for Ghost blogging platform deployments (dev/staging/prod)"
+  sourceRepos:
+  - https://github.com/dmitri166/ghost_on_prem_project
+  destinations:
+  - namespace: dev
+    server: https://kubernetes.default.svc
+  - namespace: staging
+    server: https://kubernetes.default.svc
+  - namespace: prod
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: ""
+    kind: Service
+  - group: ""
+    kind: Namespace
+  - group: networking.k8s.io
+    kind: Ingress
+  - group: apps
+    kind: Deployment
+  roles:
+  - name: ghost-admin
+    description: Ghost application admin permissions
+    policies:
+    - p, proj:ghost-apps:ghost-admin, applications, *, ghost-apps/*, allow
+    - p, proj:ghost-apps:ghost-admin, applications, sync, ghost-apps/*, allow
+  syncWindows:
+  - kind: allow
+    schedule: '0 2 * * *'  # Daily at 2 AM
+    duration: 2h
+    applications:
+    - ghost-prod
+    manualSync: true

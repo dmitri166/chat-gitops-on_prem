@@ -1,0 +1,3 @@
+[submodule "applications/ghost-app/source"]
+	path = applications/ghost-app/source
+	url = https://github.com/TryGhost/Ghost.git

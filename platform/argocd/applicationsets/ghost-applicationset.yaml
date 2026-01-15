@@ -1,0 +1,227 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ghost-multi-env
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: CreateNamespace=true
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: ""
+  labels:
+    app.kubernetes.io/name: ghost
+    app.kubernetes.io/component: applicationset
+    app.kubernetes.io/managed-by: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: dev
+        namespace: ghost
+        cluster: https://kubernetes.default.svc
+        valuesFile: "values-dev.yaml"
+        targetRevision: "HEAD"
+        replicaCount: "1"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+        ingress:
+          host: "ghost-dev.local"
+          path: "/"
+          tls: false
+        autoscaling:
+          enabled: true
+          minReplicas: 1
+          maxReplicas: 3
+          targetCPUUtilizationPercentage: 70
+        monitoring:
+          enabled: true
+          serviceMonitor: true
+        security:
+          podSecurityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 2000
+      - env: staging
+        namespace: ghost
+        cluster: https://kubernetes.default.svc
+        valuesFile: "values-staging.yaml"
+        targetRevision: "main"
+        replicaCount: "2"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        ingress:
+          host: "ghost-staging.local"
+          path: "/"
+          tls: false
+        autoscaling:
+          enabled: true
+          minReplicas: 2
+          maxReplicas: 5
+          targetCPUUtilizationPercentage: 60
+        monitoring:
+          enabled: true
+          serviceMonitor: true
+        security:
+          podSecurityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 2000
+      - env: prod
+        namespace: ghost
+        cluster: https://kubernetes.default.svc
+        valuesFile: "values-prod.yaml"
+        targetRevision: "v1.0.0"
+        replicaCount: "3"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+        ingress:
+          host: "ghost-prod.local"
+          path: "/"
+          tls: true
+        autoscaling:
+          enabled: true
+          minReplicas: 3
+          maxReplicas: 10
+          targetCPUUtilizationPercentage: 50
+        monitoring:
+          enabled: true
+          serviceMonitor: true
+        security:
+          podSecurityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 2000
+
+  template:
+    metadata:
+      name: ghost-{{env}}
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: ghost
+        app.kubernetes.io/environment: "{{env}}"
+        app.kubernetes.io/component: application"
+        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/part-of: ghost-platform
+      annotations:
+        argocd.argoproj.io/{{env}}-environment: "{{env}}"
+        argocd.argoproj.io/sync-wave: "1"
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2368"
+        prometheus.io/path: "/ghost/api/v2/admin/metrics"
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: "#ghost-{{env}}"
+
+    spec:
+      project: ghost-apps
+      
+      source:
+        repoURL: https://github.com/dmitri166/ghost_on_prem_project
+        targetRevision: "{{targetRevision}}"
+        path: applications/ghost-app/helm
+        
+        helm:
+          valueFiles:
+            - "{{valuesFile}}"
+          
+          parameters:
+            # Global configuration
+            - name: global.environment
+              value: "{{env}}"
+            - name: global.cluster
+              value: "{{cluster}}"
+            
+            # Replica configuration
+            - name: replicaCount
+              value: "{{replicaCount}}"
+            
+            # Resource configuration
+            - name: resources.requests.cpu
+              value: "{{resources.requests.cpu}}"
+            - name: resources.requests.memory
+              value: "{{resources.requests.memory}}"
+            - name: resources.limits.cpu
+              value: "{{resources.limits.cpu}}"
+            - name: resources.limits.memory
+              value: "{{resources.limits.memory}}"
+            
+            # Ingress configuration
+            - name: ingress.hosts[0].host
+              value: "{{ingress.host}}"
+            - name: ingress.hosts[0].paths[0].path
+              value: "{{ingress.path}}"
+            - name: ingress.tls[0].hosts[0]
+              value: "{{ingress.host}}"
+            - name: ingress.tls[0].secretName
+              value: "ghost-{{env}}-tls"
+            
+            # Autoscaling configuration
+            - name: autoscaling.enabled
+              value: "{{autoscaling.enabled}}"
+            - name: autoscaling.minReplicas
+              value: "{{autoscaling.minReplicas}}"
+            - name: autoscaling.maxReplicas
+              value: "{{autoscaling.maxReplicas}}"
+            - name: autoscaling.targetCPUUtilizationPercentage
+              value: "{{autoscaling.targetCPUUtilizationPercentage}}"
+            
+            # Monitoring configuration
+            - name: monitoring.enabled
+              value: "{{monitoring.enabled}}"
+            - name: monitoring.serviceMonitor.enabled
+              value: "{{monitoring.serviceMonitor}}"
+            
+            # Security configuration
+            - name: podSecurityContext.runAsNonRoot
+              value: "{{security.podSecurityContext.runAsNonRoot}}"
+            - name: podSecurityContext.runAsUser
+              value: "{{security.podSecurityContext.runAsUser}}"
+            - name: podSecurityContext.fsGroup
+              value: "{{security.podSecurityContext.fsGroup}}"
+            
+            # Ghost-specific configuration
+            - name: ghost.config.url
+              value: "http://{{ingress.host}}"
+            - name: ghost.config.adminUrl
+              value: "http://{{ingress.host}}/ghost"
+            - name: ghost.config.contentUrl
+              value: "http://{{ingress.host}}/content"
+
+      destination:
+        server: "{{cluster}}"
+        namespace: "{{namespace}}"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+      info:
+        - name: "Environment"
+          value: "{{env}}"
+        - name: "Replicas"
+          value: "{{replicaCount}}"
+        - name: "Ingress"
+          value: "{{ingress.host}}"

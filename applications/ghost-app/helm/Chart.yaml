@@ -1,0 +1,20 @@
+apiVersion: v2
+name: ghost
+description: A Helm chart for Ghost blogging platform
+type: application
+version: 0.1.0
+appVersion: "5.75.1"
+keywords:
+  - ghost
+  - blogging
+  - cms
+  - content-management
+home: https://ghost.org/
+sources:
+  - https://github.com/TryGhost/Ghost
+maintainers:
+  - name: Ghost Team
+    email: support@ghost.org
+annotations:
+  category: CMS
+  licenses: MIT

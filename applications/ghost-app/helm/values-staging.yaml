@@ -1,0 +1,50 @@
+# Ghost Staging Values
+
+replicaCount: 2
+
+image:
+  tag: "5.75.1"
+
+service:
+  port: 2368
+
+ingress:
+  enabled: true
+  hosts:
+    - host: ghost-staging.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+
+ghost:
+  config:
+    url: http://ghost-staging.local:2368
+    adminUrl: http://ghost-staging.local:2368/ghost
+    contentUrl: http://ghost-staging.local:2368/content
+
+persistence:
+  size: 20Gi
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: staging_root_password
+    database: ghost_staging
+    user: ghost_staging
+    password: ghost_staging_password
+  primary:
+    persistence:
+      size: 16Gi

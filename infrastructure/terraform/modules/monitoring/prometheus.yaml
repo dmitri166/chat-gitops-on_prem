@@ -1,0 +1,53 @@
+"apiVersion": "argoproj.io/v1alpha1"
+"kind": "Application"
+"metadata":
+  "labels":
+    "component": "monitoring"
+    "managed-by": "terraform"
+    "project": "chat-app"
+    "security.company": "chat-app"
+    "security.environment": "dev"
+    "security.managed-by": "terraform"
+    "security.version": "1.0.0"
+    "terraform": "true"
+  "name": "prometheus"
+  "namespace": "argocd"
+"spec":
+  "destination":
+    "namespace": "monitoring"
+    "server": "https://kubernetes.default.svc"
+  "project": "default"
+  "source":
+    "chart": "kube-prometheus-stack"
+    "helm":
+      "releaseName": "monitoring"
+      "values": |
+        "alertmanager":
+          "enabled": true
+          "service":
+            "type": "LoadBalancer"
+        "grafana":
+          "adminPassword": "admin123"
+          "adminUser": "admin"
+          "enabled": true
+          "service":
+            "type": "LoadBalancer"
+        "prometheus":
+          "prometheusSpec":
+            "retention": "15d"
+            "storageSpec":
+              "volumeClaimTemplate":
+                "spec":
+                  "accessModes":
+                  - "ReadWriteOnce"
+                  "resources":
+                    "requests":
+                      "storage": "10Gi"
+    "repoURL": "https://prometheus-community.github.io/helm-charts"
+    "targetRevision": "v2.45.0"
+  "syncPolicy":
+    "automated":
+      "prune": true
+      "selfHeal": false
+    "syncOptions":
+    - "CreateNamespace=true"

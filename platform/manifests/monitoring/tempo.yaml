@@ -1,0 +1,132 @@
+# Lightweight Distributed Tracing with Tempo
+# Optimized for k3d environment
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tempo
+  labels:
+    name: tempo
+
+---
+# Tempo Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-config
+  namespace: tempo
+data:
+  tempo.yaml: |
+    server:
+      http_listen_port: 3100
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: "0.0.0.0:4317"
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /tmp/tempo/blocks
+    metrics_generator:
+      processor:
+        local_blocks:
+          filter_server_spans: false
+      spans:
+        attributes:
+          - key: service.name
+            action: upsert
+            value: chat-app
+
+---
+# Tempo Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+  namespace: tempo
+  labels:
+    app: tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tempo
+  template:
+    metadata:
+      labels:
+        app: tempo
+    spec:
+      containers:
+      - name: tempo
+        image: grafana/tempo:latest
+        args:
+        - "--config.file=/etc/tempo.yaml"
+        ports:
+        - containerPort: 3100
+          name: tempo
+        - containerPort: 4317
+          name: otlp
+        volumeMounts:
+        - name: tempo-config
+          mountPath: /etc/tempo.yaml
+          subPath: tempo.yaml
+        - name: tempo-storage
+          mountPath: /tmp/tempo
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: tempo-config
+        configMap:
+          name: tempo-config
+      - name: tempo-storage
+        emptyDir: {}
+
+---
+# Tempo Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo
+  namespace: tempo
+  labels:
+    app: tempo
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3100
+    targetPort: 3100
+    name: tempo
+  - port: 4317
+    targetPort: 4317
+    name: otlp
+  selector:
+    app: tempo
+
+---
+# Grafana Tempo Datasource
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-tempo-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+data:
+  tempo-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.tempo.svc.cluster.local:3100
+      isDefault: false
+      editable: true
