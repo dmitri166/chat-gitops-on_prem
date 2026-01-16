@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "common.names.fullname" . }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "common.names.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "common.names.fullname" . }}
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+      - name: mysql
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - name: mysql
+          containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          value: {{ .Values.auth.database }}
+        - name: MYSQL_USER
+          value: {{ .Values.auth.user }}
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "common.names.fullname" . }}
+              key: mysql-password
+        volumeMounts:
+        - name: data
+          mountPath: /bitnami/mysql/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "common.names.fullname" . }}

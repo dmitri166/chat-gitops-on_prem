@@ -1,0 +1,35 @@
+apiVersion: v2
+name: mysql
+description: MySQL database for Ghost blogging platform
+type: application
+version: 0.1.0
+appVersion: "8.0.0"
+
+keywords:
+  - mysql
+  - database
+  - ghost
+  - blogging
+
+home: https://github.com/dmitri166/ghost_on_prem_project
+
+sources:
+  - https://charts.bitnami.com/bitnami
+
+dependencies:
+  - name: common
+    version: 2.x.x
+    repository: https://charts.bitnami.com/bitnami
+
+maintainers:
+  - name: dmitri166
+    email: dmitri166@example.com
+
+annotations:
+  category: Database
+  licenses: Apache-2.0
+
+# Custom values for Ghost integration
+ghost:
+  database: ghost
+  user: ghost

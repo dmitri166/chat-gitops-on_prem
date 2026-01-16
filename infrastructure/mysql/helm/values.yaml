@@ -1,0 +1,31 @@
+# MySQL Database Values for Ghost Platform
+
+# Use Bitnami MySQL image
+image:
+  repository: bitnami/mysql
+  tag: "8.0.35"
+
+auth:
+  rootPassword: "root123"
+  database: "ghost"
+  user: "ghost"
+  password: "ghost123"
+
+primary:
+  persistence:
+    size: 4Gi
+
+# Enable for Ghost compatibility
+initdbScripts:
+  | CREATE DATABASE IF NOT EXISTS ghost;
+    GRANT ALL PRIVILEGES ON ghost.* TO 'ghost'@'%';
+    FLUSH PRIVILEGES;
+
+# Ghost connection settings
+ghostDatabase: ghost
+ghostUser: ghost
+
+# Common configuration
+commonTemplate:
+  annotations: {}
+  labels: {}

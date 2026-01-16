@@ -1,0 +1,98 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ghost-platform
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: CreateNamespace=true
+  labels:
+    app.kubernetes.io/name: ghost-platform
+    app.kubernetes.io/component: applicationset
+    app.kubernetes.io/managed-by: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      # MySQL Database
+      - name: mysql
+        app: mysql
+        namespace: ghost
+        targetRevision: master
+        replicaCount: "1"
+        path: infrastructure/mysql/helm
+        valuesFile: "values.yaml"
+        
+      # Ghost Development
+      - name: ghost-dev
+        app: ghost-dev
+        namespace: ghost
+        targetRevision: master
+        replicaCount: "1"
+        path: applications/ghost-app/helm
+        valuesFile: "values-dev.yaml"
+        
+      # Ghost Staging
+      - name: ghost-staging
+        app: ghost-staging
+        namespace: ghost
+        targetRevision: master
+        replicaCount: "2"
+        path: applications/ghost-app/helm
+        valuesFile: "values-staging.yaml"
+        
+      # Ghost Production
+      - name: ghost-prod
+        app: ghost-prod
+        namespace: ghost
+        targetRevision: master
+        replicaCount: "3"
+        path: applications/ghost-app/helm
+        valuesFile: "values-prod.yaml"
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: '{{namespace}}'
+      labels:
+        app.kubernetes.io/name: '{{name}}'
+        app.kubernetes.io/component: application
+        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/part-of: ghost-platform
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: "#{{name}}"
+    spec:
+      project: ghost-apps
+      source:
+        repoURL: https://github.com/dmitri166/ghost_on_prem_project.git
+        targetRevision: "{{targetRevision}}"
+        path: "{{path}}"
+        helm:
+          valueFiles:
+            - "{{valuesFile}}"
+          parameters:
+            - name: global.environment
+              value: "{{name}}"
+            - name: replicaCount
+              value: "{{replicaCount}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - PrunePropagationPolicy=foreground
+        - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      info:
+        - name: "Application"
+          value: "{{name}}"
+        - name: "Environment"
+          value: "{{namespace}}"
