@@ -3,7 +3,7 @@
 # Use Bitnami MySQL image
 image:
   repository: bitnami/mysql
-  tag: "8.0.35"
+  tag: "8.0"
 
 auth:
   rootPassword: "root123"
