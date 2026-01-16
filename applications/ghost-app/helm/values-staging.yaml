@@ -26,7 +26,7 @@ resources:
     cpu: 500m
     memory: 512Mi
   requests:
-    cpu: 250m
+    cpu: 200m
     memory: 256Mi
 
 autoscaling:
@@ -40,16 +40,26 @@ ghost:
     adminUrl: http://ghost-staging.local:2368/ghost
     contentUrl: http://ghost-staging.local:2368/content
 
+# Database configuration (BEST PRACTICE)
+database:
+  client: mysql
+  connection:
+    host: mysql.ghost.svc.cluster.local
+    port: 3306
+    user: ghost
+    password: ghost123
+    database: ghost
+
 persistence:
-  size: 20Gi
+  size: 10Gi
 
 mysql:
-  enabled: true
+  enabled: false
   auth:
-    rootPassword: staging_root_password
-    database: ghost_staging
-    user: ghost_staging
-    password: ghost_staging_password
+    rootPassword: root123
+    database: ghost
+    user: ghost
+    password: ghost123
   primary:
     persistence:
-      size: 16Gi
+      size: 8Gi

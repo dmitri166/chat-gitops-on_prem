@@ -35,16 +35,26 @@ ghost:
     adminUrl: http://ghost-dev.local:2368/ghost
     contentUrl: http://ghost-dev.local:2368/content
 
+# Database configuration (BEST PRACTICE)
+database:
+  client: mysql
+  connection:
+    host: mysql.ghost.svc.cluster.local
+    port: 3306
+    user: ghost
+    password: ghost123
+    database: ghost
+
 persistence:
   size: 5Gi
 
 mysql:
-  enabled: true
+  enabled: false
   auth:
-    rootPassword: dev_root_password
-    database: ghost_dev
-    user: ghost_dev
-    password: ghost_dev_password
+    rootPassword: root123
+    database: ghost
+    user: ghost
+    password: ghost123
   primary:
     persistence:
       size: 4Gi

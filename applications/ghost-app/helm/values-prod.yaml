@@ -39,29 +39,37 @@ resources:
 autoscaling:
   enabled: true
   minReplicas: 3
-  maxReplicas: 10
+  maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 
 ghost:
   config:
-    url: https://ghost-prod.local
-    adminUrl: https://ghost-prod.local/ghost
-    contentUrl: https://ghost-prod.local/content
+    url: http://ghost-prod.local:2368
+    adminUrl: http://ghost-prod.local:2368/ghost
+    contentUrl: http://ghost-prod.local:2368/content
+
+database:
+  client: mysql
+  connection:
+    host: mysql.ghost.svc.cluster.local
+    port: 3306
+    user: ghost
+    password: ghost123
+    database: ghost
 
 persistence:
-  size: 50Gi
-  storageClass: fast-ssd
+  size: 20Gi
 
 mysql:
-  enabled: true
+  enabled: false
   auth:
-    rootPassword: prod_root_password
-    database: ghost_prod
-    user: ghost_prod
-    password: ghost_prod_password
+    rootPassword: root123
+    database: ghost
+    user: ghost
+    password: ghost123
   primary:
     persistence:
-      size: 40Gi
+      size: 16Gi
       storageClass: fast-ssd
 
 monitoring:
