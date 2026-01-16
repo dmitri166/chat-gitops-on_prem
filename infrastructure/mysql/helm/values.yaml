@@ -17,7 +17,8 @@ primary:
 
 # Enable for Ghost compatibility
 initdbScripts:
-  | CREATE DATABASE IF NOT EXISTS ghost;
+  create-ghost-db.sql: |
+    CREATE DATABASE IF NOT EXISTS ghost;
     GRANT ALL PRIVILEGES ON ghost.* TO 'ghost'@'%';
     FLUSH PRIVILEGES;
 
