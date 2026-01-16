@@ -1,9 +1,16 @@
 # MySQL Database Values for Ghost Platform
 
-# Use Bitnami MySQL image
+# Use official MySQL image
 image:
-  repository: bitnami/mysql
+  repository: mysql
   tag: "8.0"
+
+# Environment variables for official MySQL image
+env:
+  MYSQL_ROOT_PASSWORD: "root123"
+  MYSQL_DATABASE: "ghost"
+  MYSQL_USER: "ghost"
+  MYSQL_PASSWORD: "ghost123"
 
 auth:
   rootPassword: "root123"
