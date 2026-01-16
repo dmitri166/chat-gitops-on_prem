@@ -12,6 +12,7 @@ GHOST_APPS_PROJECT: "ghost-apps"
 
 # Application Paths
 GHOST_APP_PATH: "applications/ghost-app/helm"
+MYSQL_APP_PATH: "infrastructure/mysql/helm"
 
 # Chart Versions and Sources
 CHARTS:
@@ -50,7 +51,7 @@ NETWORKING:
 # Environment Configuration
 ENVIRONMENTS:
   dev:
-    namespace: "dev"
+    namespace: "ghost"
     valuesFile: "values-dev.yaml"
     replicaCount: 1
     resources:
@@ -60,8 +61,25 @@ ENVIRONMENTS:
       limits:
         cpu: "500m"
         memory: "512Mi"
+    ingress:
+      host: "ghost-dev.local"
+      path: "/"
+      tls: false
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 70
+    monitoring:
+      enabled: true
+      serviceMonitor: true
+    security:
+      podSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
   staging:
-    namespace: "staging"
+    namespace: "ghost"
     valuesFile: "values-staging.yaml"
     replicaCount: 2
     resources:
@@ -71,8 +89,25 @@ ENVIRONMENTS:
       limits:
         cpu: "1000m"
         memory: "1Gi"
+    ingress:
+      host: "ghost-staging.local"
+      path: "/"
+      tls: false
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 70
+    monitoring:
+      enabled: true
+      serviceMonitor: true
+    security:
+      podSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
   prod:
-    namespace: "prod"
+    namespace: "ghost"
     valuesFile: "values-prod.yaml"
     replicaCount: 3
     resources:
@@ -82,6 +117,47 @@ ENVIRONMENTS:
       limits:
         cpu: "2000m"
         memory: "2Gi"
+    ingress:
+      host: "ghost-prod.local"
+      path: "/"
+      tls: true
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 70
+    monitoring:
+      enabled: true
+      serviceMonitor: true
+      prometheusRule: true
+    security:
+      podSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+
+# Database Configuration
+DATABASE:
+  client: "mysql"
+  host: "mysql.ghost.svc.cluster.local"
+  port: "3306"
+  user: "ghost"
+  password: "ghost123"
+  database: "ghost"
+  rootPassword: "root123"
+
+# Ghost Configuration
+GHOST:
+  image:
+    repository: "ghost"
+    tag: "5.75.1"
+    pullPolicy: "IfNotPresent"
+  service:
+    port: 2368
+    type: ClusterIP
+  persistence:
+    size: "10Gi"
+    storageClass: "standard"
 
 # Sync Policies
 SYNC_POLICY:
@@ -95,3 +171,8 @@ SYNC_POLICY:
       kind: "Deployment"
       jsonPointers:
         - "/metadata/annotations/argocd.argoproj.io~1refresh"
+
+# Secrets Configuration
+SECRETS:
+  ghostDatabaseSecrets: "ghost-database-secrets"
+  mysqlSecrets: "mysql-secrets"

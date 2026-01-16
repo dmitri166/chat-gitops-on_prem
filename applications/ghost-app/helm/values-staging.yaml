@@ -1,6 +1,6 @@
 # Ghost Staging Values
 
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: ghost
@@ -34,6 +34,35 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 4
 
+# Database configuration via environment variables using secrets (BEST PRACTICE)
+env:
+  database__client: mysql
+  database__connection__host:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-host
+  database__connection__port:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-port
+  database__connection__user:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-user
+  database__connection__password:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-password
+  database__connection__database:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-database
+
 ghost:
   config:
     url: http://ghost-staging.local:2368
@@ -62,4 +91,4 @@ mysql:
     password: ghost123
   primary:
     persistence:
-      size: 8Gi
+      size: 4Gi

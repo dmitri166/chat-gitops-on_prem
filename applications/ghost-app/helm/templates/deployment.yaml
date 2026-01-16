@@ -60,20 +60,45 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           env:
+            # Ghost URL Configuration
             - name: url
               value: {{ .Values.ghost.config.url }}
+            - name: adminUrl
+              value: {{ .Values.ghost.config.adminUrl }}
+            - name: contentUrl
+              value: {{ .Values.ghost.config.contentUrl }}
+            
+            # Database Configuration (BEST PRACTICE - Use Secrets)
             - name: database__client
-              value: {{ .Values.ghost.database.type }}
+              value: {{ .Values.database.client }}
             - name: database__connection__host
-              value: {{ .Values.ghost.database.host }}
+              valueFrom:
+                secretKeyRef:
+                  name: ghost-database-secrets
+                  key: mysql-host
             - name: database__connection__port
-              value: "{{ .Values.ghost.database.port }}"
+              valueFrom:
+                secretKeyRef:
+                  name: ghost-database-secrets
+                  key: mysql-port
             - name: database__connection__user
-              value: {{ .Values.ghost.database.user }}
+              valueFrom:
+                secretKeyRef:
+                  name: ghost-database-secrets
+                  key: mysql-user
             - name: database__connection__password
-              value: {{ .Values.ghost.database.password }}
+              valueFrom:
+                secretKeyRef:
+                  name: ghost-database-secrets
+                  key: mysql-password
             - name: database__connection__database
-              value: {{ .Values.ghost.database.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: ghost-database-secrets
+                  key: mysql-database
+            
+            # Mail Configuration
+            {{- if .Values.ghost.mail }}
             - name: mail__transport
               value: {{ .Values.ghost.mail.transport }}
             - name: mail__options__service
@@ -82,6 +107,19 @@ spec:
               value: {{ .Values.ghost.mail.options.auth.user }}
             - name: mail__options__auth__pass
               value: {{ .Values.ghost.mail.options.auth.pass }}
+            {{- end }}
+            
+            # Environment Variables from values.yaml (if provided)
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              {{- if kindIs "string" $value }}
+              value: {{ $value | quote }}
+              {{- else if kindIs "map" $value }}
+              valueFrom:
+                {{- toYaml $value | nindent 16 }}
+              {{- end }}
+            {{- end }}
+            
             # OpenTelemetry environment variables
             {{- if .Values.opentelemetry.enabled }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
@@ -91,6 +129,7 @@ spec:
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: "service.name=ghost,service.version={{ .Chart.AppVersion }},environment={{ .Release.Namespace }}"
             {{- end }}
+            
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

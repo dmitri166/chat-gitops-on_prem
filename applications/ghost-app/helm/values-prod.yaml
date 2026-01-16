@@ -1,6 +1,6 @@
 # Ghost Production Values
 
-replicaCount: 3
+replicaCount: 2
 
 image:
   repository: ghost
@@ -16,8 +16,8 @@ serviceAccount:
 ingress:
   enabled: true
   annotations:
+    kubernetes.io/ingress.class: "traefik"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/rate-limit: "100"
   hosts:
     - host: ghost-prod.local
       paths:
@@ -38,24 +38,52 @@ resources:
 
 autoscaling:
   enabled: true
-  minReplicas: 3
-  maxReplicas: 6
+  minReplicas: 2
+  maxReplicas: 5
   targetCPUUtilizationPercentage: 70
+
+env:
+  database__client: mysql
+  database__connection__host:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-host
+  database__connection__port:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-port
+  database__connection__user:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-user
+  database__connection__password:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-password
+  database__connection__database:
+    valueFrom:
+      secretKeyRef:
+        name: ghost-database-secrets
+        key: mysql-database
 
 ghost:
   config:
-    url: http://ghost-prod.local:2368
-    adminUrl: http://ghost-prod.local:2368/ghost
-    contentUrl: http://ghost-prod.local:2368/content
+    url: https://ghost-prod.local
+    adminUrl: https://ghost-prod.local/ghost
+    contentUrl: https://ghost-prod.local/content
 
 database:
   client: mysql
   connection:
     host: mysql.ghost.svc.cluster.local
     port: 3306
+    database: ghost
     user: ghost
     password: ghost123
-    database: ghost
 
 persistence:
   size: 20Gi
@@ -74,8 +102,14 @@ mysql:
 
 monitoring:
   enabled: true
-  serviceMonitor:
-    enabled: true
+  serviceMonitor: true
+  prometheusRule: true
+
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 2000
 
 opentelemetry:
   enabled: true
