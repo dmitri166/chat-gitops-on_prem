@@ -54,6 +54,14 @@ secrets/
 *.env
 .env.*
 
+# Kubeconfig - NEVER commit cluster credentials
+.kube/
+kubeconfig*
+infrastructure/kubeconfig/config-*.yaml
+
 # Backup files
 *.bak
-*.backup
+*.backup.kube/
+kubeconfig*
+.kube/
+kubeconfig*

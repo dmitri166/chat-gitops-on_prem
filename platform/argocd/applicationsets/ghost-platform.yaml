@@ -1,0 +1,98 @@
+# PURE HELM APPROACH - RECOMMENDED
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ghost-platform
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: ghost
+    app.kubernetes.io/component: applicationset
+    app.kubernetes.io/part-of: ghost-platform
+spec:
+  generators:
+    - list:
+        elements:
+          # Infrastructure (Helm)
+          - name: mysql
+            namespace: ghost
+            path: infrastructure/mysql/helm
+            valuesFile: values.yaml
+            targetRevision: main
+            environment: shared
+          
+          # Applications (Helm)
+          - name: ghost-dev
+            namespace: ghost-dev
+            path: applications/ghost-app/helm
+            valuesFile: values-dev.yaml
+            targetRevision: main
+            environment: dev
+          
+          - name: ghost-staging
+            namespace: ghost-staging
+            path: applications/ghost-app/helm
+            valuesFile: values-staging.yaml
+            targetRevision: main
+            environment: staging
+          
+          - name: ghost-prod
+            namespace: ghost-prod
+            path: applications/ghost-app/helm
+            valuesFile: values-prod.yaml
+            targetRevision: main
+            environment: prod
+
+  template:
+    metadata:
+      name: '{{name}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: ghost
+        app.kubernetes.io/component: application
+        app.kubernetes.io/part-of: ghost-platform
+        app.kubernetes.io/environment: '{{environment | default "shared"}}'
+      annotations:
+        argocd.argoproj.io/sync-options: CreateNamespace=true
+        argocd.argoproj.io/compare-options: IgnoreExtraneous
+
+    spec:
+      project: ghost-apps
+      source:
+        repoURL: https://github.com/dmitri166/ghost_on_prem
+        targetRevision: '{{targetRevision}}'
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - '{{valuesFile}}'
+          parameters:
+            - name: global.environment
+              value: '{{environment}}'
+            - name: global.namespace
+              value: '{{namespace}}'
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+      info:
+        - name: Environment
+          value: '{{environment}}'
+        - name: Namespace
+          value: '{{namespace}}'
+        - name: Deployment Type
+          value: Helm
